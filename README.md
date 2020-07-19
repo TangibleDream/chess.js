@@ -1,4 +1,4 @@
-#Chess.js 
+# Chess.js 
 
 <img src="./images/TemplarChess1283.jpg">
 Chess is a two-player strategy board game played on a checkered board with 64 squares arranged in an 8×8 grid.
