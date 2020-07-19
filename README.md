@@ -1,4 +1,6 @@
-#Chess.js <img src="./images/TemplarChess1283.jpg">
+#Chess.js 
+
+<img src="./images/TemplarChess1283.jpg">
 Chess is a two-player strategy board game played on a checkered board with 64 squares arranged in an 8×8 grid.
 Each player begins with 16 pieces: one king, one queen, two rooks, two knights, two bishops, and eight pawns.
 Each piece type moves differently, with the most powerful being the queen and the least powerful the pawn. The objective is to checkmate the opponent's king by placing it under an inescapable threat of capture.
