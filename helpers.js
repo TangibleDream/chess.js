@@ -13,4 +13,13 @@ const squareColor = index => {
    return (isOdd(getY(index)) ? isOdd(getX(index)) ? "white" : "black" : isOdd(getX(index)) ? "black" : "white");
 }
 
-export { getX, getY, squareColor }
+const piecesJSON = () => {
+  let xhr = new XMLHttpRequest();
+  let result = '';
+  xhr.open('GET', 'pieces.json', false);
+  xhr.resposeType = 'text';
+  xhr.send();
+  return xhr.responseText;
+}
+
+export { getX, getY, squareColor, piecesJSON }
