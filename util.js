@@ -19,11 +19,15 @@ const piecePresent = (num) => {
 
 const boardRefresh = () => {
 
-    let squares = []
+    let squares = [];
+    let anchorElement = [];
+    let addAnchor = false;
 
     for (let i = 0; i < 64; i ++){
+        addAnchor = false;
         squares[i] = document.createElement("img");
         if (piecePresent(i)){
+          addAnchor = true;
           switch (pieces.pieces[pieceNum].piece){
             case 'White King' :
               squareColor(i) === "black" ? squares[i].src = "images\\wkingbbkgr.png" : squares[i].src = "images\\wkingwbkgr.png";
@@ -85,7 +89,15 @@ const boardRefresh = () => {
         } else {
           squareColor(i) === "black" ? squares[i].src = "images\\bbkgr.png" : squares[i].src = "images\\wbkgr.png";
         }
-        document.getElementById('chessBoard').appendChild(squares[i]);
+        if (addAnchor) {
+            anchorElement[i] = document.createElement('a');
+            anchorElement[i].id = `${i}`;
+            anchorElement[i].href = '#';
+            document.getElementById('chessBoard').appendChild(anchorElement[i]);
+            document.getElementById(`${i}`).appendChild(squares[i]);
+        } else {
+            document.getElementById('chessBoard').appendChild(squares[i]);
+        }
         if (((i+1) % 8 === 0) && (i < 60))
         {
           document.getElementById('chessBoard').appendChild(document.createElement('br'));
