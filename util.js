@@ -17,6 +17,10 @@ const piecePresent = (num) => {
     return result
 }
 
+const movePiece = (id) => {
+  alert(`hello ${id}`);
+}
+
 const boardRefresh = () => {
 
     let squares = [];
@@ -94,6 +98,7 @@ const boardRefresh = () => {
             anchorElement[i].id = `${i}`;
             anchorElement[i].href = '#';
             document.getElementById('chessBoard').appendChild(anchorElement[i]);
+            document.getElementById(`${i}`).addEventListener("click", function(e) { movePiece(this.id) });
             document.getElementById(`${i}`).appendChild(squares[i]);
         } else {
             document.getElementById('chessBoard').appendChild(squares[i]);
