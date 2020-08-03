@@ -18,7 +18,11 @@ const piecePresent = (num) => {
 }
 
 const movePiece = (id) => {
-  alert(`hello ${id}`);
+  for (let i = 0; i < 32; i ++){
+    if (pieces.pieces[i].position === parseInt(id)){
+      alert(`This piece is ${pieces.pieces[i].piece}`);
+    }
+  }
 }
 
 const boardRefresh = () => {
