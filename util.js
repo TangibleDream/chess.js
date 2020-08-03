@@ -116,3 +116,4 @@ const boardRefresh = () => {
 }
 
 boardRefresh();
+document.getElementById('instructionMessage').textContent = 'Player One: Select which piece to move.';
