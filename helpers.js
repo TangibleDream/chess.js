@@ -21,6 +21,6 @@ const piecesJSON = () => {
 }
 
 const squareColor = index => {
-   return (isOdd(getY(index)) ? isOdd(getX(index)) ? "white" : "black" : isOdd(getX(index)) ? "black" : "white");
+   return ((isOdd(getY(index)) === isOdd(getX(index))) ? "white" : "black");
 }
 export { flipValue, getX, getY, piecesJSON, squareColor }
