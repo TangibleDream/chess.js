@@ -13,9 +13,8 @@ const isOdd = num => { return num % 2 != 0 }
 
 const piecesJSON = () => {
   let xhr = new XMLHttpRequest();
-  let result = '';
   xhr.open('GET', 'pieces.json', false);
-  xhr.resposeType = 'text';
+  //xhr.responseType = 'text';
   xhr.send();
   return xhr.responseText;
 }

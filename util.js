@@ -5,31 +5,15 @@ import { squareColor, piecesJSON } from './helpers.js';
 let pieces = JSON.parse(piecesJSON());
 let pieceNum = -1;
 
-const piecePresent = (num) => {
-    let result = false;
-    for (let i = 0; i < 32; i ++){
-        if (pieces.pieces[i].position === num)
-        {
-          result = true;
-          pieceNum = i;
-        }
-    }
-    return result
-}
-
-const movePiece = (id) => {
-  for (let i = 0; i < 32; i ++){
-    if (pieces.pieces[i].position === parseInt(id)){
-      alert(`This piece is ${pieces.pieces[i].piece}`);
-    }
-  }
-}
-
 const boardRefresh = () => {
 
     let squares = [];
     let anchorElement = [];
     let addAnchor = false;
+    let element = document.getElementById('chessBoard');
+    while (element.firstChild) {
+      element.removeChild(element.firstChild);
+    }
 
     for (let i = 0; i < 64; i ++){
         addAnchor = false;
@@ -101,19 +85,49 @@ const boardRefresh = () => {
             anchorElement[i] = document.createElement('a');
             anchorElement[i].id = `${i}`;
             anchorElement[i].href = '#';
-            document.getElementById('chessBoard').appendChild(anchorElement[i]);
+            element.appendChild(anchorElement[i]);
             document.getElementById(`${i}`).addEventListener("click", function(e) { movePiece(this.id) });
             document.getElementById(`${i}`).appendChild(squares[i]);
         } else {
-            document.getElementById('chessBoard').appendChild(squares[i]);
+            element.appendChild(squares[i]);
         }
         if (((i+1) % 8 === 0) && (i < 60))
         {
-          document.getElementById('chessBoard').appendChild(document.createElement('br'));
-        }
+          element.appendChild(document.createElement('br'));
+        };
+    };
+};
 
+const movePiece = (id) => {
+  for (let i = 0; i < 32; i ++){
+    if (pieces.pieces[i].position === parseInt(id)){
+      alert(`This piece is ${pieces.pieces[i].piece}`);
+    };
+  };
+};
+
+const stateOne = () => {
+    document.getElementById('instructionMessage').textContent = 'What piece would you like to move?  Press button to end game'
+    document.getElementById('actionButton').textContent = 'Concede Game'
+    document.getElementById('actionButton').removeEventListener("click", startGame);
+    document.getElementById('actionButton').addEventListener("click", function(e) { console.log("add stateFour(1)") });
+    //document.getElementById('instructionMessage').textContent = 'It is wise to know your limitations. And folly not to push the envelope, reload to play again.';
+    //document.getElementById('actionButton').style.visibility = "hidden"; //doesn't work
+}
+
+const piecePresent = (num) => {
+    let result = false;
+    for (let i = 0; i < 32; i ++){
+        if (pieces.pieces[i].position === num)
+        {
+          result = true;
+          pieceNum = i;
+        }
     }
+    return result
 }
 
 boardRefresh();
-document.getElementById('instructionMessage').textContent = 'Player One: Select which piece to move.';
+document.getElementById('instructionMessage').textContent = 'Press start to play.';
+let startGame = function(e) { gameLoop ()}
+document.getElementById('actionButton').addEventListener("click", stateOne);
