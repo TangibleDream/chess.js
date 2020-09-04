@@ -110,9 +110,12 @@ const stateOne = () => {
     document.getElementById('instructionMessage').textContent = 'What piece would you like to move?  Press button to end game'
     document.getElementById('actionButton').textContent = 'Concede Game'
     document.getElementById('actionButton').removeEventListener("click", startGame);
-    document.getElementById('actionButton').addEventListener("click", function(e) { console.log("add stateFour(1)") });
-    //document.getElementById('instructionMessage').textContent = 'It is wise to know your limitations. And folly not to push the envelope, reload to play again.';
-    //document.getElementById('actionButton').style.visibility = "hidden"; //doesn't work
+    document.getElementById('actionButton').addEventListener("click", function(e) { stateFour('White') });
+}
+
+const stateFour = (player) => {
+  document.getElementById('instructionMessage').textContent = `${player} player lost by conceding. It is wise to know your limitations. And folly not to push the envelope. Reload to play again.`;
+  document.getElementById('actionButton').style.visibility = "hidden";
 }
 
 const piecePresent = (num) => {
