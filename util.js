@@ -114,7 +114,8 @@ const stateOne = () => {
 }
 
 const stateFour = (player) => {
-  document.getElementById('instructionMessage').textContent = `${player} player lost by conceding. It is wise to know your limitations. And folly not to push the envelope. Reload to play again.`;
+  document.getElementById('instructionMessage').setAttribute('style', 'white-space: pre;');
+  document.getElementById('instructionMessage').textContent = `${player} player lost by conceding. \r\n It is wise to know your limitations, and folly not to push the envelope.\r\n Reload to play again.`;
   document.getElementById('actionButton').style.visibility = "hidden";
 }
 
