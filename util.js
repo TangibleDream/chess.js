@@ -4,6 +4,8 @@ import { squareColor, piecesJSON } from './helpers.js';
 
 let pieces = JSON.parse(piecesJSON());
 let pieceNum = -1;
+let gameState = 0;
+let color = 'White'
 
 const boardRefresh = () => {
 
@@ -101,16 +103,26 @@ const boardRefresh = () => {
 const movePiece = (id) => {
   for (let i = 0; i < 32; i ++){
     if (pieces.pieces[i].position === parseInt(id)){
-      alert(`This piece is ${pieces.pieces[i].piece}`);
-    };
-  };
+      switch(gameState) {
+        case 0:
+          alert(`This piece is ${pieces.pieces[i].piece}`);
+        break;
+        case 1:
+          if(pieces.pieces[i].piece.charAt(0) != color.charAt(0)){
+            document.getElementById('instructionMessage').setAttribute('style', 'white-space: pre;');
+            document.getElementById('instructionMessage').textContent = `This is not a ${color} player piece. \r\n Select your own color piece.`;
+          }
+        break;
+      }
+    }
+  }
 };
 
 const stateOne = () => {
+    gameState = 1;
     document.getElementById('instructionMessage').textContent = 'What piece would you like to move?  Press button to end game'
     document.getElementById('actionButton').textContent = 'Concede Game'
-    document.getElementById('actionButton').removeEventListener("click", startGame);
-    document.getElementById('actionButton').addEventListener("click", function(e) { stateFour('White') });
+    document.getElementById('actionButton').addEventListener("click", function(e) { stateFour(color) });
 }
 
 const stateFour = (player) => {
@@ -133,5 +145,4 @@ const piecePresent = (num) => {
 
 boardRefresh();
 document.getElementById('instructionMessage').textContent = 'Press start to play.';
-let startGame = function(e) { gameLoop ()}
 document.getElementById('actionButton').addEventListener("click", stateOne);
