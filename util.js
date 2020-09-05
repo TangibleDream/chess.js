@@ -119,13 +119,14 @@ const movePiece = (id) => {
 };
 
 const stateOne = () => {
-    gameState = 1;
-    document.getElementById('instructionMessage').textContent = 'What piece would you like to move?  Press button to end game'
-    document.getElementById('actionButton').textContent = 'Concede Game'
-    document.getElementById('actionButton').addEventListener("click", function(e) { stateFour(color) });
+  gameState = 1;
+  document.getElementById('instructionMessage').textContent = 'What piece would you like to move?  Press button to end game'
+  document.getElementById('actionButton').textContent = 'Concede Game'
+  document.getElementById('actionButton').addEventListener("click", function(e) { stateFour(color) });
 }
 
 const stateFour = (player) => {
+  gameState = 4;
   document.getElementById('instructionMessage').setAttribute('style', 'white-space: pre;');
   document.getElementById('instructionMessage').textContent = `${player} player lost by conceding. \r\n It is wise to know your limitations, and folly not to push the envelope.\r\n Reload to play again.`;
   document.getElementById('actionButton').style.visibility = "hidden";
