@@ -1,17 +1,15 @@
 'use strict';
 import { squareColor, piecesJSON } from './helpers.js';
 
-
-let pieces = JSON.parse(piecesJSON());
-let pieceNum = -1;
 let gameState = 0;
-let color = 'White'
+let colorPlaying = 'White'
 
 const boardRefresh = () => {
-
+    let pieces = JSON.parse(piecesJSON());
     let squares = [];
     let anchorElement = [];
     let addAnchor = false;
+    let pieceArray = [];
     let element = document.getElementById('chessBoard');
     while (element.firstChild) {
       element.removeChild(element.firstChild);
@@ -20,9 +18,10 @@ const boardRefresh = () => {
     for (let i = 0; i < 64; i ++){
         addAnchor = false;
         squares[i] = document.createElement("img");
-        if (piecePresent(i)){
+        pieceArray = piecePresent(i);
+        if (pieceArray[0]){
           addAnchor = true;
-          switch (pieces.pieces[pieceNum].piece){
+          switch (pieces.pieces[pieceArray[1]].piece){
             case 'White King' :
               squareColor(i) === "black" ? squares[i].src = "images\\wkingbbkgr.png" : squares[i].src = "images\\wkingwbkgr.png";
               break;
@@ -101,6 +100,7 @@ const boardRefresh = () => {
 };
 
 const movePiece = (id) => {
+  let pieces = JSON.parse(piecesJSON());
   for (let i = 0; i < 32; i ++){
     if (pieces.pieces[i].position === parseInt(id)){
       switch(gameState) {
@@ -108,9 +108,9 @@ const movePiece = (id) => {
           alert(`This piece is ${pieces.pieces[i].piece}`);
         break;
         case 1:
-          if(pieces.pieces[i].piece.charAt(0) != color.charAt(0)){
+          if(pieces.pieces[i].piece.charAt(0) != colorPlaying.charAt(0)){
             document.getElementById('instructionMessage').setAttribute('style', 'white-space: pre;');
-            document.getElementById('instructionMessage').textContent = `This is not a ${color} player piece. \r\n Select your own color piece.`;
+            document.getElementById('instructionMessage').textContent = `This is not a ${colorPlaying.toLowerCase()} player piece. \r\n Select your own color piece.`;
           }
         break;
       }
@@ -122,7 +122,7 @@ const stateOne = () => {
   gameState = 1;
   document.getElementById('instructionMessage').textContent = 'What piece would you like to move?  Press button to end game'
   document.getElementById('actionButton').textContent = 'Concede Game'
-  document.getElementById('actionButton').addEventListener("click", function(e) { stateFour(color) });
+  document.getElementById('actionButton').addEventListener("click", function(e) { stateFour(colorPlaying) });
 }
 
 const stateFour = (player) => {
@@ -133,12 +133,12 @@ const stateFour = (player) => {
 }
 
 const piecePresent = (num) => {
+    let pieces = JSON.parse(piecesJSON());
     let result = false;
     for (let i = 0; i < 32; i ++){
         if (pieces.pieces[i].position === num)
         {
-          result = true;
-          pieceNum = i;
+          result = [true, i];
         }
     }
     return result
