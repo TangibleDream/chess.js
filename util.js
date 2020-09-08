@@ -9,7 +9,7 @@ const boardRefresh = () => {
     let squares = [];
     let anchorElement = [];
     let addAnchor = false;
-    let pieceArray = [];
+    let pieceNum = -1;
     let element = document.getElementById('chessBoard');
     while (element.firstChild) {
       element.removeChild(element.firstChild);
@@ -18,10 +18,10 @@ const boardRefresh = () => {
     for (let i = 0; i < 64; i ++){
         addAnchor = false;
         squares[i] = document.createElement("img");
-        pieceArray = piecePresent(i);
-        if (pieceArray[0]){
+        pieceNum = piecePresent(i);
+        if (pieceNum > -1){
           addAnchor = true;
-          switch (pieces.pieces[pieceArray[1]].piece){
+          switch (pieces.pieces[pieceNum].piece){
             case 'White King' :
               squareColor(i) === "black" ? squares[i].src = "images\\wkingbbkgr.png" : squares[i].src = "images\\wkingwbkgr.png";
               break;
@@ -134,11 +134,11 @@ const stateFour = (player) => {
 
 const piecePresent = (num) => {
     let pieces = JSON.parse(piecesJSON());
-    let result = false;
+    let result = -1;
     for (let i = 0; i < 32; i ++){
         if (pieces.pieces[i].position === num)
         {
-          result = [true, i];
+          result = i;
         }
     }
     return result
