@@ -1,10 +1,25 @@
 'use strict';
 import { squareColor, piecesJSON } from './helpers.js';
 
-let gameState = 0;
-let colorPlaying = 'White'
+const game = {
+  gameState: 0,
+  colorPlaying: 'White',
 
-const boardRefresh = () => {
+  get getGameState() {
+    return this.gameState;
+  },
+  get getColorPlaying() {
+    return this.colorPlaying
+  },
+  set setGameState(state) {
+    this.gameState = state;
+  },
+  set setColorPlaying(color) {
+    this.colorPlaying = color;
+  }
+}
+
+const boardRefresh = (chessGame) => {
     let pieces = JSON.parse(piecesJSON());
     let squares = [];
     let anchorElement = [];
@@ -87,7 +102,7 @@ const boardRefresh = () => {
             anchorElement[i].id = `${i}`;
             anchorElement[i].href = '#';
             element.appendChild(anchorElement[i]);
-            document.getElementById(`${i}`).addEventListener("click", function(e) { movePiece(this.id) });
+            document.getElementById(`${i}`).addEventListener("click", function(e) { movePiece(this.id, chessGame) });
             document.getElementById(`${i}`).appendChild(squares[i]);
         } else {
             element.appendChild(squares[i]);
@@ -99,18 +114,18 @@ const boardRefresh = () => {
     };
 };
 
-const movePiece = (id) => {
+const movePiece = (id,chessGame) => {
   let pieces = JSON.parse(piecesJSON());
   for (let i = 0; i < 32; i ++){
     if (pieces.pieces[i].position === parseInt(id)){
-      switch(gameState) {
+      switch(chessGame.getGameState) {
         case 0:
           alert(`This piece is ${pieces.pieces[i].piece}`);
         break;
         case 1:
-          if(pieces.pieces[i].piece.charAt(0) != colorPlaying.charAt(0)){
+          if(pieces.pieces[i].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)){
             document.getElementById('instructionMessage').setAttribute('style', 'white-space: pre;');
-            document.getElementById('instructionMessage').textContent = `This is not a ${colorPlaying.toLowerCase()} player piece. \r\n Select your own color piece.`;
+            document.getElementById('instructionMessage').textContent = `This is not a ${chessGame.getColorPlaying.toLowerCase()} player piece. \r\n Select your own color piece.`;
           }
         break;
       }
@@ -118,15 +133,15 @@ const movePiece = (id) => {
   }
 };
 
-const stateOne = () => {
-  gameState = 1;
+const stateOne = (chessGame) => {
+  chessGame.setGameState = 1;
   document.getElementById('instructionMessage').textContent = 'What piece would you like to move?  Press button to end game'
   document.getElementById('actionButton').textContent = 'Concede Game'
-  document.getElementById('actionButton').addEventListener("click", function(e) { stateFour(colorPlaying) });
+  document.getElementById('actionButton').addEventListener("click", function(e) { stateFour(chessGame.getColorPlaying) });
 }
 
 const stateFour = (player) => {
-  gameState = 4;
+  chessGame.setGameState = 4;
   document.getElementById('instructionMessage').setAttribute('style', 'white-space: pre;');
   document.getElementById('instructionMessage').textContent = `${player} player lost by conceding. \r\n It is wise to know your limitations, and folly not to push the envelope.\r\n Reload to play again.`;
   document.getElementById('actionButton').style.visibility = "hidden";
@@ -144,6 +159,7 @@ const piecePresent = (num) => {
     return result
 }
 
-boardRefresh();
+let chessGame = game;
+boardRefresh(chessGame);
 document.getElementById('instructionMessage').textContent = 'Press start to play.';
-document.getElementById('actionButton').addEventListener("click", stateOne);
+document.getElementById('actionButton').addEventListener("click", stateOne.bind(null, chessGame));
