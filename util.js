@@ -166,37 +166,66 @@ const moves = (id,chessGame) => {
   let sm = [];
   let em = [];
   let wm = [];
+  let nwm = [];
+  let nem = [];
+  let sem = [];
+  let swm = [];
   switch (pieces.pieces[id].piece) {
     case "White King Rook" :
     case "Black King Rook" :
     case "White Queen Rook" :
     case "Black Queen Rook" :
-    if (getY(pieces.pieces[id].position) > 1) { nm = north(id,chessGame)};
-    if (getY(pieces.pieces[id].position) < 8) { sm = south(id,chessGame)};
-    if (getX(pieces.pieces[id].position) < 8) { em = east(id,chessGame)};
-    if (getX(pieces.pieces[id].position) > 1) { wm = west(id,chessGame)};
-    let blocked = true;
-    if (Number.isInteger(nm[0]) || Number.isInteger(sm[0]) || Number.isInteger(em[0]) || Number.isInteger(wm[0])) blocked = false;
-    if (blocked === false){
-      result.push(id);
-      console.log(`NM = ${nm}, EM = ${em}, WM = ${wm}, SM = ${sm}`);
-      if (Number.isInteger(nm[0])) result = result.concat(nm);
-      if (Number.isInteger(sm[0])) result = result.concat(sm);
-      if (Number.isInteger(em[0])) result = result.concat(em);
-      if (Number.isInteger(wm[0])) result = result.concat(wm);
-      console.log(result);
+    {
+      if (getY(pieces.pieces[id].position) > 1) { nm = north(id,chessGame)};
+      if (getY(pieces.pieces[id].position) < 8) { sm = south(id,chessGame)};
+      if (getX(pieces.pieces[id].position) < 8) { em = east(id,chessGame)};
+      if (getX(pieces.pieces[id].position) > 1) { wm = west(id,chessGame)};
+      let blocked = true;
+      if (Number.isInteger(nm[0]) || Number.isInteger(sm[0]) || Number.isInteger(em[0]) || Number.isInteger(wm[0])) blocked = false;
+      if (blocked === false){
+        result.push(id);
+        if (Number.isInteger(nm[0])) result = result.concat(nm);
+        if (Number.isInteger(sm[0])) result = result.concat(sm);
+        if (Number.isInteger(em[0])) result = result.concat(em);
+        if (Number.isInteger(wm[0])) result = result.concat(wm);
+      }else{
+        result.push('blocked');
+        if (isNaN(nm[0])) result = result.concat(nm);
+        if (isNaN(sm[0])) result = result.concat(sm);
+        if (isNaN(em[0])) result = result.concat(em);
+        if (isNaN(wm[0])) result = result.concat(wm);
       }
-    else{
-      result.push('blocked');
-      if (isNaN(nm[0])) result = result.concat(nm);
-      if (isNaN(sm[0])) result = result.concat(sm);
-      if (isNaN(em[0])) result = result.concat(em);
-      if (isNaN(wm[0])) result = result.concat(wm);
-      }
-     break;
     }
-    return result;
+    break;
+    case "White King Bishop" :
+    case "Black King Bishop" :
+    case "White Queen Bishop" :
+    case "Black Queen Bishop" :
+    {
+      if (getY(pieces.pieces[id].position) > 1 && getX(pieces.pieces[id].position) > 1) { nwm = northWest(id,chessGame)};
+      if (getY(pieces.pieces[id].position) > 1 && getX(pieces.pieces[id].position) < 8) { nem = northEast(id,chessGame)};
+      if (getY(pieces.pieces[id].position) < 8 && getX(pieces.pieces[id].position) < 8) { sem = southEast(id,chessGame)};
+      if (getY(pieces.pieces[id].position) < 8 && getX(pieces.pieces[id].position) > 1) { swm = southWest(id,chessGame)};
+        let blocked = true;
+        if (Number.isInteger(nwm[0]) || Number.isInteger(nem[0]) || Number.isInteger(sem[0]) || Number.isInteger(swm[0])) blocked = false;
+        if (blocked === false){
+          result.push(id);
+          if (Number.isInteger(nwm[0])) result = result.concat(nwm);
+          if (Number.isInteger(nem[0])) result = result.concat(nem);
+          if (Number.isInteger(sem[0])) result = result.concat(sem);
+          if (Number.isInteger(swm[0])) result = result.concat(swm);
+        } else{
+          result.push('blocked');
+          if (isNaN(nwm[0])) result = result.concat(nwm);
+          if (isNaN(nem[0])) result = result.concat(nem);
+          if (isNaN(sem[0])) result = result.concat(sem);
+          if (isNaN(swm[0])) result = result.concat(swm);
+        }
+    }
+    break;
   }
+  return result;
+}
 
 
 const north = (id,chessGame) => {
@@ -217,6 +246,50 @@ const north = (id,chessGame) => {
       moves++;
     }
     if (pieces.pieces[id].position - (8 * (moves + 1)) < 0) noMoreMoves = true;
+  }
+  return result;
+}
+
+const northEast = (id,chessGame) => {
+  let result = [];
+  let pieces = JSON.parse(piecesJSON());
+  let moves = 0;
+  let location = 0;
+  let noMoreMoves = false;
+  while (noMoreMoves === false){
+    location = piecePresent(pieces.pieces[id].position - (7 * (moves + 1)))
+    if (location != -1) {
+      if (moves === 0){
+        result.push(pieces.pieces[location].piece);
+      }
+      noMoreMoves = true;
+    } else {
+      result.push(pieces.pieces[id].position - (7 * (moves + 1)));
+      moves++;
+    }
+    if (pieces.pieces[id].position - (7 * (moves + 1)) < 0  || getX(pieces.pieces[id].position - (7 * (moves + 1))) === 1) noMoreMoves = true;
+  }
+  return result;
+}
+
+const northWest = (id,chessGame) => {
+  let result = [];
+  let pieces = JSON.parse(piecesJSON());
+  let moves = 0;
+  let location = 0;
+  let noMoreMoves = false;
+  while (noMoreMoves === false){
+    location = piecePresent(pieces.pieces[id].position - (9 * (moves + 1)))
+    if (location != -1) {
+      if (moves === 0){
+        result.push(pieces.pieces[location].piece);
+      }
+      noMoreMoves = true;
+    } else {
+      result.push(pieces.pieces[id].position - (9 * (moves + 1)));
+      moves++;
+    }
+    if (pieces.pieces[id].position - (9 * (moves + 1)) < 0 || getX(pieces.pieces[id].position - (9 * (moves + 1))) === 8) noMoreMoves = true;
   }
   return result;
 }
@@ -251,6 +324,50 @@ const south = (id,chessGame) => {
       moves++;
     }
     if (pieces.pieces[id].position + (8 * (moves + 1)) > 63) noMoreMoves = true;
+  }
+  return result;
+}
+
+const southEast = (id,chessGame) => {
+  let result = [];
+  let pieces = JSON.parse(piecesJSON());
+  let moves = 0;
+  let location = 0;
+  let noMoreMoves = false;
+  while (noMoreMoves === false){
+    location = piecePresent(pieces.pieces[id].position + (9 * (moves + 1)))
+    if (location != -1) {
+      if (moves === 0){
+        result.push(pieces.pieces[location].piece);
+      }
+      noMoreMoves = true;
+    } else {
+      result.push(pieces.pieces[id].position + (9 * (moves + 1)));
+      moves++;
+    }
+    if (pieces.pieces[id].position + (9 * (moves + 1)) > 63  || getX(pieces.pieces[id].position + (9 * (moves + 1))) === 1) noMoreMoves = true;
+  }
+  return result;
+}
+
+const southWest = (id,chessGame) => {
+  let result = [];
+  let pieces = JSON.parse(piecesJSON());
+  let moves = 0;
+  let location = 0;
+  let noMoreMoves = false;
+  while (noMoreMoves === false){
+    location = piecePresent(pieces.pieces[id].position + (7 * (moves + 1)))
+    if (location != -1) {
+      if (moves === 0){
+        result.push(pieces.pieces[location].piece);
+      }
+      noMoreMoves = true;
+    } else {
+      result.push(pieces.pieces[id].position + (7 * (moves + 1)));
+      moves++;
+    }
+    if (pieces.pieces[id].position + (7 * (moves + 1)) > 63  || getX(pieces.pieces[id].position + (7 * (moves + 1))) === 8) noMoreMoves = true;
   }
   return result;
 }
