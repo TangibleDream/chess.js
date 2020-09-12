@@ -1,23 +1,5 @@
 'use strict';
-import { squareColor, piecesJSON } from './helpers.js';
-
-const game = {
-  gameState: 0,
-  colorPlaying: 'White',
-
-  get getGameState() {
-    return this.gameState;
-  },
-  get getColorPlaying() {
-    return this.colorPlaying
-  },
-  set setGameState(state) {
-    this.gameState = state;
-  },
-  set setColorPlaying(color) {
-    this.colorPlaying = color;
-  }
-}
+import { squareColor, piecesJSON, getY, getX } from './helpers.js';
 
 const boardRefresh = (chessGame) => {
     let pieces = JSON.parse(piecesJSON());
@@ -114,6 +96,46 @@ const boardRefresh = (chessGame) => {
     };
 };
 
+const east = (id,chessGame) => {
+  let result = [];
+  let pieces = JSON.parse(piecesJSON());
+  let moves = 0;
+  let location = 0;
+  let noMoreMoves = false;
+  while (noMoreMoves === false){
+    location = piecePresent(pieces.pieces[id].position + (1 * (moves + 1)))
+    if (location != -1) {
+      if (moves === 0){
+        result.push(pieces.pieces[location].piece);
+      }
+      noMoreMoves = true;
+    } else {
+      result.push(pieces.pieces[id].position + (1 * (moves + 1)));
+      moves++;
+    }
+    if (pieces.pieces[id].position + (1 * (moves + 1)) > 63 || getX(pieces.pieces[id].position + (1 * (moves + 1))) === 1 ) noMoreMoves = true;
+  }
+  return result;
+}
+
+const game = {
+  gameState: 0,
+  colorPlaying: 'White',
+
+  get getGameState() {
+    return this.gameState;
+  },
+  get getColorPlaying() {
+    return this.colorPlaying
+  },
+  set setGameState(state) {
+    this.gameState = state;
+  },
+  set setColorPlaying(color) {
+    this.colorPlaying = color;
+  }
+}
+
 const movePiece = (id,chessGame) => {
   let pieces = JSON.parse(piecesJSON());
   for (let i = 0; i < 32; i ++){
@@ -126,12 +148,112 @@ const movePiece = (id,chessGame) => {
           if(pieces.pieces[i].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)){
             document.getElementById('instructionMessage').setAttribute('style', 'white-space: pre;');
             document.getElementById('instructionMessage').textContent = `This is not a ${chessGame.getColorPlaying.toLowerCase()} player piece. \r\n Select your own color piece.`;
+          } else {
+            let move = moves(i,chessGame);
+            document.getElementById('instructionMessage').setAttribute('style', 'white-space: pre;');
+            document.getElementById('instructionMessage').textContent = `You are ${move[0]} (${move}) \r\n Select a different piece.`;
           }
         break;
       }
     }
   }
 };
+
+const moves = (id,chessGame) => {
+  let pieces = JSON.parse(piecesJSON());
+  let result = [];
+  let nm = [];
+  let sm = [];
+  let em = [];
+  let wm = [];
+  switch (pieces.pieces[id].piece) {
+    case "White King Rook" :
+    case "Black King Rook" :
+    case "White Queen Rook" :
+    case "Black Queen Rook" :
+    if (getY(pieces.pieces[id].position) > 1) { nm = north(id,chessGame)};
+    if (getY(pieces.pieces[id].position) < 8) { sm = south(id,chessGame)};
+    if (getX(pieces.pieces[id].position) < 8) { em = east(id,chessGame)};
+    if (getX(pieces.pieces[id].position) > 1) { wm = west(id,chessGame)};
+    let blocked = true;
+    if (Number.isInteger(nm[0]) || Number.isInteger(sm[0]) || Number.isInteger(em[0]) || Number.isInteger(wm[0])) blocked = false;
+    if (blocked === false){
+      result.push(id);
+      console.log(`NM = ${nm}, EM = ${em}, WM = ${wm}, SM = ${sm}`);
+      if (Number.isInteger(nm[0])) result = result.concat(nm);
+      if (Number.isInteger(sm[0])) result = result.concat(sm);
+      if (Number.isInteger(em[0])) result = result.concat(em);
+      if (Number.isInteger(wm[0])) result = result.concat(wm);
+      console.log(result);
+      }
+    else{
+      result.push('blocked');
+      if (isNaN(nm[0])) result = result.concat(nm);
+      if (isNaN(sm[0])) result = result.concat(sm);
+      if (isNaN(em[0])) result = result.concat(em);
+      if (isNaN(wm[0])) result = result.concat(wm);
+      }
+     break;
+    }
+    return result;
+  }
+
+
+const north = (id,chessGame) => {
+  let result = [];
+  let pieces = JSON.parse(piecesJSON());
+  let moves = 0;
+  let location = 0;
+  let noMoreMoves = false;
+  while (noMoreMoves === false){
+    location = piecePresent(pieces.pieces[id].position - (8 * (moves + 1)))
+    if (location != -1) {
+      if (moves === 0){
+        result.push(pieces.pieces[location].piece);
+      }
+      noMoreMoves = true;
+    } else {
+      result.push(pieces.pieces[id].position - (8 * (moves + 1)));
+      moves++;
+    }
+    if (pieces.pieces[id].position - (8 * (moves + 1)) < 0) noMoreMoves = true;
+  }
+  return result;
+}
+
+const piecePresent = (num) => {
+    let pieces = JSON.parse(piecesJSON());
+    let result = -1;
+    for (let i = 0; i < 32; i ++){
+        if (pieces.pieces[i].position === num)
+        {
+          result = i;
+        }
+    }
+    return result
+}
+
+const south = (id,chessGame) => {
+  let result = [];
+  let pieces = JSON.parse(piecesJSON());
+  let moves = 0;
+  let location = 0;
+  let noMoreMoves = false;
+  while (noMoreMoves === false){
+    location = piecePresent(pieces.pieces[id].position + (8 * (moves + 1)))
+    if (location != -1) {
+      if (moves === 0){
+        result.push(pieces.pieces[location].piece);
+      }
+      noMoreMoves = true;
+    } else {
+      result.push(pieces.pieces[id].position + (8 * (moves + 1)));
+      moves++;
+    }
+    if (pieces.pieces[id].position + (8 * (moves + 1)) > 63) noMoreMoves = true;
+  }
+  return result;
+}
 
 const stateOne = (chessGame) => {
   chessGame.setGameState = 1;
@@ -147,16 +269,26 @@ const stateFour = (player) => {
   document.getElementById('actionButton').style.visibility = "hidden";
 }
 
-const piecePresent = (num) => {
-    let pieces = JSON.parse(piecesJSON());
-    let result = -1;
-    for (let i = 0; i < 32; i ++){
-        if (pieces.pieces[i].position === num)
-        {
-          result = i;
-        }
+const west = (id,chessGame) => {
+  let result = [];
+  let pieces = JSON.parse(piecesJSON());
+  let moves = 0;
+  let location = 0;
+  let noMoreMoves = false;
+  while (noMoreMoves === false){
+    location = piecePresent(pieces.pieces[id].position - (1 * (moves + 1)))
+    if (location != -1) {
+      if (moves === 0){
+        result.push(pieces.pieces[location].piece);
+      }
+      noMoreMoves = true;
+    } else {
+      result.push(pieces.pieces[id].position - (1 * (moves + 1)));
+      moves++;
     }
-    return result
+    if (pieces.pieces[id].position - (1 * (moves + 1)) < 0 || getX(pieces.pieces[id].position - (1 * (moves + 1))) === 8 ) noMoreMoves = true;
+  }
+  return result;
 }
 
 let chessGame = game;
