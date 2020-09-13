@@ -237,6 +237,43 @@ const moves = (id,chessGame) => {
         }
     }
     break;
+    case "White Queen" :
+    case "Black Queen" :
+    {
+      if (getY(pieces.pieces[id].position) > 1) { nm = north(id,chessGame)};
+      if (getY(pieces.pieces[id].position) < 8) { sm = south(id,chessGame)};
+      if (getX(pieces.pieces[id].position) < 8) { em = east(id,chessGame)};
+      if (getX(pieces.pieces[id].position) > 1) { wm = west(id,chessGame)};
+      if (getY(pieces.pieces[id].position) > 1 && getX(pieces.pieces[id].position) > 1) { nwm = northWest(id,chessGame)};
+      if (getY(pieces.pieces[id].position) > 1 && getX(pieces.pieces[id].position) < 8) { nem = northEast(id,chessGame)};
+      if (getY(pieces.pieces[id].position) < 8 && getX(pieces.pieces[id].position) < 8) { sem = southEast(id,chessGame)};
+      if (getY(pieces.pieces[id].position) < 8 && getX(pieces.pieces[id].position) > 1) { swm = southWest(id,chessGame)};
+        let blocked = true;
+        if (Number.isInteger(nm[0]) || Number.isInteger(sm[0]) || Number.isInteger(em[0]) || Number.isInteger(wm[0]) ||
+        Number.isInteger(nwm[0]) || Number.isInteger(nem[0]) || Number.isInteger(sem[0]) || Number.isInteger(swm[0])) blocked = false;
+        if (blocked === false){
+          result.push(id);
+          if (Number.isInteger(nm[0])) result = result.concat(nm);
+          if (Number.isInteger(sm[0])) result = result.concat(sm);
+          if (Number.isInteger(em[0])) result = result.concat(em);
+          if (Number.isInteger(wm[0])) result = result.concat(wm);
+          if (Number.isInteger(nwm[0])) result = result.concat(nwm);
+          if (Number.isInteger(nem[0])) result = result.concat(nem);
+          if (Number.isInteger(sem[0])) result = result.concat(sem);
+          if (Number.isInteger(swm[0])) result = result.concat(swm);
+        } else{
+          result.push('blocked');
+          if (isNaN(nm[0])) result = result.concat(nm);
+          if (isNaN(sm[0])) result = result.concat(sm);
+          if (isNaN(em[0])) result = result.concat(em);
+          if (isNaN(wm[0])) result = result.concat(wm);
+          if (isNaN(nwm[0])) result = result.concat(nwm);
+          if (isNaN(nem[0])) result = result.concat(nem);
+          if (isNaN(sem[0])) result = result.concat(sem);
+          if (isNaN(swm[0])) result = result.concat(swm);
+        }
+    }
+    break;
   }
   return result;
 }
