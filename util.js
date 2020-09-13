@@ -308,6 +308,34 @@ const moves = (id,chessGame) => {
           }
       }
     break;
+    case "White Pawn One" :
+    case "White Pawn Two" :
+    case "White Pawn Three" :
+    case "White Pawn Four" :
+    case "White Pawn Five" :
+    case "White Pawn Six" :
+    case "White Pawn Seven" :
+    case "White Pawn Eight" :
+    case "Black Pawn One" :
+    case "Black Pawn Two" :
+    case "Black Pawn Three" :
+    case "Black Pawn Four" :
+    case "Black Pawn Five" :
+    case "Black Pawn Six" :
+    case "Black Pawn Seven" :
+    case "Black Pawn Eight" :
+    {
+      if (getY(pieces.pieces[id].position) > 1) { nm = north(id,chessGame)};
+      let blocked = true;
+      if (Number.isInteger(nm[0])) blocked = false;
+      if (blocked === false){
+        result.push(id);
+        if ([48,49,50,51,52,53,54,55].includes(pieces.pieces[id].position)) { result = result.concat(nm[0], nm[1]); }
+        else {
+        result = result.concat(nm[0]);}
+      }else{ if (isNaN(nm[0])) result = result.concat(nm); }
+    }
+    break;
   }
   return result;
 }
