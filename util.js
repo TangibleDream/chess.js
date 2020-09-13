@@ -165,7 +165,8 @@ const movePiece = (id,chessGame) => {
           } else {
             let move = moves(i,chessGame);
             document.getElementById('instructionMessage').setAttribute('style', 'white-space: pre;');
-            document.getElementById('instructionMessage').textContent = `You are ${move[0]} (${move}) \r\n Select a different piece.`;
+            if (isNaN(move[0])) { document.getElementById('instructionMessage').textContent = `You are blocked (${move}) \r\n Select a different piece.`; }
+            else { document.getElementById('instructionMessage').textContent = `Where would you like to move? (${move})`; }
           }
         break;
       }
@@ -203,7 +204,6 @@ const moves = (id,chessGame) => {
         if (Number.isInteger(em[0])) result = result.concat(em);
         if (Number.isInteger(wm[0])) result = result.concat(wm);
       }else{
-        result.push('blocked');
         if (isNaN(nm[0])) result = result.concat(nm);
         if (isNaN(sm[0])) result = result.concat(sm);
         if (isNaN(em[0])) result = result.concat(em);
@@ -229,7 +229,6 @@ const moves = (id,chessGame) => {
           if (Number.isInteger(sem[0])) result = result.concat(sem);
           if (Number.isInteger(swm[0])) result = result.concat(swm);
         } else{
-          result.push('blocked');
           if (isNaN(nwm[0])) result = result.concat(nwm);
           if (isNaN(nem[0])) result = result.concat(nem);
           if (isNaN(sem[0])) result = result.concat(sem);
@@ -262,7 +261,6 @@ const moves = (id,chessGame) => {
           if (Number.isInteger(sem[0])) result = result.concat(sem);
           if (Number.isInteger(swm[0])) result = result.concat(swm);
         } else{
-          result.push('blocked');
           if (isNaN(nm[0])) result = result.concat(nm);
           if (isNaN(sm[0])) result = result.concat(sm);
           if (isNaN(em[0])) result = result.concat(em);
