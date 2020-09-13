@@ -221,8 +221,7 @@ const moves = (id,chessGame) => {
       if (getY(pieces.pieces[id].position) < 8 && getX(pieces.pieces[id].position) < 8) { sem = southEast(id,chessGame)};
       if (getY(pieces.pieces[id].position) < 8 && getX(pieces.pieces[id].position) > 1) { swm = southWest(id,chessGame)};
         let blocked = true;
-        if (Number.isInteger(nm[0]) || Number.isInteger(sm[0]) || Number.isInteger(em[0]) || Number.isInteger(wm[0]) ||
-        Number.isInteger(nwm[0]) || Number.isInteger(nem[0]) || Number.isInteger(sem[0]) || Number.isInteger(swm[0])) blocked = false;
+        if (Number.isInteger(nwm[0]) || Number.isInteger(nem[0]) || Number.isInteger(sem[0]) || Number.isInteger(swm[0])) blocked = false;
         if (blocked === false){
           result.push(id);
           if (Number.isInteger(nwm[0])) result = result.concat(nwm);
@@ -250,7 +249,8 @@ const moves = (id,chessGame) => {
       if (getY(pieces.pieces[id].position) < 8 && getX(pieces.pieces[id].position) < 8) { sem = southEast(id,chessGame)};
       if (getY(pieces.pieces[id].position) < 8 && getX(pieces.pieces[id].position) > 1) { swm = southWest(id,chessGame)};
         let blocked = true;
-        if (Number.isInteger(nwm[0]) || Number.isInteger(nem[0]) || Number.isInteger(sem[0]) || Number.isInteger(swm[0])) blocked = false;
+        if (Number.isInteger(nm[0]) || Number.isInteger(sm[0]) || Number.isInteger(em[0]) || Number.isInteger(wm[0]) ||
+        Number.isInteger(nwm[0]) || Number.isInteger(nem[0]) || Number.isInteger(sem[0]) || Number.isInteger(swm[0])) blocked = false;
         if (blocked === false){
           result.push(id);
           if (Number.isInteger(nm[0])) result = result.concat(nm);
