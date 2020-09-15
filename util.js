@@ -118,6 +118,43 @@ const compassRose = () => {
   return(Object);
 }
 
+const checkKnightX = (loc) => {
+  let result = []
+  switch (getX(loc)) {
+    case 1:
+      result = [-17,-10,6,15];
+      break;
+    case 2:
+      result = [-10,6];
+      break;
+    case 7:
+      result = [-6,10];
+      break;
+    case 8:
+      result = [-15,-6,10,17];
+      break;
+  }
+  return result;
+}
+
+const checkKnightY = (loc) => {
+  let result = []
+  switch (getY(loc)) {
+    case 1:
+      result = [-6,-10,-15,17];
+      break;
+    case 2:
+      result = [-15,-17];
+      break;
+    case 7:
+      result = [15,17];
+      break;
+    case 8:
+      result = [6,10,15,17];
+      break;
+  }
+  return result;
+}
 const east = (id,chessGame) => {
   let cr = compassRose();
   let pieces = JSON.parse(piecesJSON());
@@ -336,6 +373,25 @@ const moves = (id,chessGame) => {
       }else{ if (isNaN(nm[0])) result = result.concat(nm); }
     }
     break;
+    case "White King Knight" :
+    case "Black King Knight" :
+    case "White Queen Knight" :
+    case "Black Queen Knight" :
+    {
+      let mathSet=[-17,-15,-10,-6,6,10,15,17]
+      let removeSet = []
+      removeSet = removeSet.concat(checkKnightX(pieces.pieces[id].position))
+      removeSet = removeSet.concat(checkKnightY(pieces.pieces[id].position))
+      removeSet = removeDups(removeSet);
+      mathSet = remove(mathSet, removeSet);
+      let position = -1
+      result = [id]
+      for (let correction of mathSet){
+        position = pieces.pieces[id].position + correction
+        if (piecePresent(position) === -1) result = result.concat(position);
+      }
+    }
+    break;
   }
   return result;
 }
@@ -394,6 +450,11 @@ const piecePresent = (num) => {
     return result
 }
 
+const removeDups = (arr) => {
+  let result = [...new Set(arr)];
+  return result;
+}
+
 const south = (id,chessGame) => {
   let cr = compassRose();
   let pieces = JSON.parse(piecesJSON());
@@ -448,6 +509,15 @@ const stateFour = (player) => {
   document.getElementById('instructionMessage').setAttribute('style', 'white-space: pre;');
   document.getElementById('instructionMessage').textContent = `${player} player lost by conceding. \r\n It is wise to know your limitations, and folly not to push the envelope.\r\n Reload to play again.`;
   document.getElementById('actionButton').style.visibility = "hidden";
+}
+
+const remove = (setArr, toDelArr) => {
+  let index = -1;
+  for (let dels of toDelArr) {
+    index = setArr.indexOf(dels);
+    setArr.splice(index, 1);
+  }
+  return setArr;
 }
 
 const west = (id,chessGame) => {
