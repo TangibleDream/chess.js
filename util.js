@@ -161,6 +161,9 @@ const east = (id,chessGame) => {
   while (cr.getNoMoreMoves === false){
     cr.setLocation = piecePresent(pieces.pieces[id].position + (1 * (cr.getMoves + 1)));
     if (cr.getLocation != -1) {
+      if (pieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
+        cr.setResultInc = pieces.pieces[id].position + (1 * (cr.getMoves + 1));
+        cr.setNoMoreMoves = true; }
       if (cr.getMoves === 0){ cr.setResult = pieces.pieces[cr.getLocation].piece; }
       cr.setNoMoreMoves = true;
     } else { cr.setResultInc = pieces.pieces[id].position + (1 * (cr.getMoves + 1)); }
@@ -387,8 +390,12 @@ const moves = (id,chessGame) => {
       let position = -1
       result = [id]
       for (let correction of mathSet){
+        alert(mathSet);
         position = pieces.pieces[id].position + correction
-        if (piecePresent(position) === -1) result = result.concat(position);
+        if (piecePresent(position) === -1  ) {result = result.concat(position);}
+        else {
+          if (pieces.pieces[piecePresent(position)].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) { result = result.concat(position); }
+        }
       }
     }
     break;
@@ -402,6 +409,9 @@ const north = (id,chessGame) => {
   while (cr.getNoMoreMoves === false){
     cr.setLocation = piecePresent(pieces.pieces[id].position - (8 * (cr.getMoves + 1)))
     if (cr.getLocation != -1) {
+      if (pieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
+        cr.setResultInc = pieces.pieces[id].position - (8 * (cr.getMoves + 1));
+        cr.setNoMoreMoves = true; }
       if (cr.getMoves === 0){ cr.setResult = pieces.pieces[cr.getLocation].piece; }
       cr.setNoMoreMoves = true;
     } else {  cr.setResultInc = pieces.pieces[id].position - (8 * (cr.getMoves + 1)); }
@@ -416,6 +426,9 @@ const northEast = (id,chessGame) => {
   while (cr.getNoMoreMoves === false){
     cr.setLocation = piecePresent(pieces.pieces[id].position - (7 * (cr.getMoves + 1)))
     if (cr.getLocation != -1) {
+      if (pieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
+        cr.setResultInc = pieces.pieces[id].position - (7 * (cr.getMoves + 1));
+        cr.setNoMoreMoves = true; }
       if (cr.getMoves === 0){ cr.setResult = pieces.pieces[cr.getLocation].piece; }
       cr.setNoMoreMoves = true;
     } else { cr.setResultInc = pieces.pieces[id].position - (7 * (cr.getMoves + 1)); }
@@ -430,6 +443,9 @@ const northWest = (id,chessGame) => {
   while (cr.getNoMoreMoves === false){
     cr.setLocation = piecePresent(pieces.pieces[id].position - (9 * (cr.getMoves + 1)))
     if (cr.getLocation != -1) {
+      if (pieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
+        cr.setResultInc = pieces.pieces[id].position - (9 * (cr.getMoves + 1));
+        cr.setNoMoreMoves = true; }
       if (cr.getMoves === 0){ cr.setResult = pieces.pieces[cr.getLocation].piece; }
       cr.setNoMoreMoves = true;
     } else { cr.setResultInc = pieces.pieces[id].position - (9 * (cr.getMoves + 1)); }
@@ -461,6 +477,9 @@ const south = (id,chessGame) => {
   while (cr.getNoMoreMoves === false){
     cr.setLocation = piecePresent(pieces.pieces[id].position + (8 * (cr.getMoves + 1)))
     if (cr.getLocation != -1) {
+      if (pieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
+        cr.setResultInc = pieces.pieces[id].position + (8 * (cr.getMoves + 1));
+        cr.setNoMoreMoves = true; }
       if (cr.getMoves === 0){ cr.setResult = pieces.pieces[cr.getLocation].piece; }
       cr.setNoMoreMoves = true;
     } else { cr.setResultInc = pieces.pieces[id].position + (8 * (cr.getMoves + 1)); }
@@ -475,6 +494,9 @@ const southEast = (id,chessGame) => {
   while (cr.getNoMoreMoves === false){
     cr.setLocation = piecePresent(pieces.pieces[id].position + (9 * (cr.getMoves + 1)))
     if (cr.getLocation != -1) {
+      if (pieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
+        cr.setResultInc = pieces.pieces[id].position + (9 * (cr.getMoves + 1));
+        cr.setNoMoreMoves = true; }
       if (cr.getMoves === 0){ cr.setResult = pieces.pieces[cr.getLocation].piece; }
       cr.setNoMoreMoves = true;
     } else { cr.setResultInc = pieces.pieces[id].position + (9 * (cr.getMoves + 1)); }
@@ -489,6 +511,9 @@ const southWest = (id,chessGame) => {
   while (cr.getNoMoreMoves === false){
     cr.setLocation = piecePresent(pieces.pieces[id].position + (7 * (cr.getMoves + 1)))
     if (cr.getLocation != -1) {
+      if (pieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
+        cr.setResultInc = pieces.pieces[id].position + (7 * (cr.getMoves + 1));
+        cr.setNoMoreMoves = true; }
       if (cr.getMoves === 0){ cr.setResult = pieces.pieces[cr.getLocation].piece; }
       cr.setNoMoreMoves = true;
     } else { cr.setResultInc = pieces.pieces[id].position + (7 * (cr.getMoves + 1)); }
@@ -526,6 +551,9 @@ const west = (id,chessGame) => {
   while (cr.getNoMoreMoves === false){
     cr.setLocation = piecePresent(pieces.pieces[id].position - (1 * (cr.getMoves + 1)))
     if (cr.getLocation != -1) {
+      if (pieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
+        cr.setResultInc = pieces.pieces[id].position - (1 * (cr.getMoves + 1));
+        cr.setNoMoreMoves = true; }
       if (cr.getMoves === 0){ cr.setResult = pieces.pieces[cr.getLocation].piece; }
       cr.setNoMoreMoves = true;
     } else { cr.setResultInc = pieces.pieces[id].position - (1 * (cr.getMoves + 1)); }
