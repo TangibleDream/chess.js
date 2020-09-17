@@ -369,7 +369,6 @@ const moves = (id,chessGame) => {
       if (getY(pieces.pieces[id].position) > 1 && getX(pieces.pieces[id].position) > 1) { nwm = northWest(id,chessGame,true)};
       if (getY(pieces.pieces[id].position) > 1 && getX(pieces.pieces[id].position) < 8) { nem = northEast(id,chessGame,true)};
       let blocked = true;
-      let canCapture = false;
       if (Number.isInteger(nm[0]) || Number.isInteger(nem[0]) || Number.isInteger(nwm[0])) blocked = false;
       if (blocked === false){
         result.push(id);
