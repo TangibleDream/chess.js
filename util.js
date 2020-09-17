@@ -365,15 +365,21 @@ const moves = (id,chessGame) => {
     case "Black Pawn Seven" :
     case "Black Pawn Eight" :
     {
-      if (getY(pieces.pieces[id].position) > 1) { nm = north(id,chessGame)};
+      if (getY(pieces.pieces[id].position) > 1) { nm = north(id,chessGame,true)};
+      if (getY(pieces.pieces[id].position) > 1 && getX(pieces.pieces[id].position) > 1) { nwm = northWest(id,chessGame,true)};
+      if (getY(pieces.pieces[id].position) > 1 && getX(pieces.pieces[id].position) < 8) { nem = northEast(id,chessGame,true)};
       let blocked = true;
-      if (Number.isInteger(nm[0])) blocked = false;
+      if (Number.isInteger(nm[0]) || Number.isInteger(nem[0]) || Number.isInteger(nwm[0])) blocked = false;
       if (blocked === false){
         result.push(id);
-        if ([48,49,50,51,52,53,54,55].includes(pieces.pieces[id].position)) { result = result.concat(nm[0], nm[1]); }
+        if ([48,49,50,51,52,53,54,55].includes(pieces.pieces[id].position)) {
+          if (Number.isInteger(nm[0])) result = result.concat(nm[0], nm[1]);
+        }
         else {
-        result = result.concat(nm[0]);}
-      }else{ if (isNaN(nm[0])) result = result.concat(nm); }
+          if (Number.isInteger(nm[0])) result = result.concat(nm[0]);}
+        if (Number.isInteger(nem[0])) result = result.concat(nem[0]);
+        if (Number.isInteger(nwm[0])) result = result.concat(nwm[0]);
+      } else { if (isNaN(nm[0])) result = result.concat(nm); }
     }
     break;
     case "White King Knight" :
@@ -403,13 +409,13 @@ const moves = (id,chessGame) => {
   return result;
 }
 
-const north = (id,chessGame) => {
+const north = (id,chessGame,isPawn = false) => {
   let cr = compassRose();
   let pieces = JSON.parse(piecesJSON());
   while (cr.getNoMoreMoves === false){
     cr.setLocation = piecePresent(pieces.pieces[id].position - (8 * (cr.getMoves + 1)))
     if (cr.getLocation != -1) {
-      if (pieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
+      if (pieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0) && isPawn === false) {
         cr.setResultInc = pieces.pieces[id].position - (8 * (cr.getMoves + 1));
         cr.setNoMoreMoves = true; }
       if (cr.getMoves === 0){ cr.setResult = pieces.pieces[cr.getLocation].piece; }
@@ -420,35 +426,37 @@ const north = (id,chessGame) => {
   return cr.getResult;
 }
 
-const northEast = (id,chessGame) => {
+const northEast = (id,chessGame,isPawn = false) => {
   let cr = compassRose();
   let pieces = JSON.parse(piecesJSON());
   while (cr.getNoMoreMoves === false){
     cr.setLocation = piecePresent(pieces.pieces[id].position - (7 * (cr.getMoves + 1)))
-    if (cr.getLocation != -1) {
+    if ((cr.getLocation != -1 && isPawn === false) || (cr.getLocation != -1 && isPawn === true && cr.getMoves === 0)) {
       if (pieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
         cr.setResultInc = pieces.pieces[id].position - (7 * (cr.getMoves + 1));
         cr.setNoMoreMoves = true; }
       if (cr.getMoves === 0){ cr.setResult = pieces.pieces[cr.getLocation].piece; }
       cr.setNoMoreMoves = true;
-    } else { cr.setResultInc = pieces.pieces[id].position - (7 * (cr.getMoves + 1)); }
+    } else { if (isPawn === false) {cr.setResultInc = pieces.pieces[id].position - (7 * (cr.getMoves + 1));}
+     else { cr.setNoMoreMoves = true }}
     if (pieces.pieces[id].position - (7 * (cr.getMoves + 1)) < 0  || getX(pieces.pieces[id].position - (7 * (cr.getMoves + 1))) === 1) cr.setNoMoreMoves = true;
   }
   return cr.getResult;
 }
 
-const northWest = (id,chessGame) => {
+const northWest = (id,chessGame,isPawn = false) => {
   let cr = compassRose();
   let pieces = JSON.parse(piecesJSON());
   while (cr.getNoMoreMoves === false){
     cr.setLocation = piecePresent(pieces.pieces[id].position - (9 * (cr.getMoves + 1)))
-    if (cr.getLocation != -1) {
+    if ((cr.getLocation != -1 && isPawn === false) || (cr.getLocation != -1 && isPawn === true && cr.getMoves === 0)) {
       if (pieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
         cr.setResultInc = pieces.pieces[id].position - (9 * (cr.getMoves + 1));
         cr.setNoMoreMoves = true; }
       if (cr.getMoves === 0){ cr.setResult = pieces.pieces[cr.getLocation].piece; }
       cr.setNoMoreMoves = true;
-    } else { cr.setResultInc = pieces.pieces[id].position - (9 * (cr.getMoves + 1)); }
+    } else { if (isPawn === false) { cr.setResultInc = pieces.pieces[id].position - (9 * (cr.getMoves + 1));}
+     else { cr.setNoMoreMoves = true }}
     if (pieces.pieces[id].position - (9 * (cr.getMoves + 1)) < 0 || getX(pieces.pieces[id].position - (9 * (cr.getMoves + 1))) === 8) cr.setNoMoreMoves = true;
   }
   return cr.getResult;
@@ -464,6 +472,15 @@ const piecePresent = (num) => {
         }
     }
     return result
+}
+
+const remove = (setArr, toDelArr) => {
+  let index = -1;
+  for (let dels of toDelArr) {
+    index = setArr.indexOf(dels);
+    setArr.splice(index, 1);
+  }
+  return setArr;
 }
 
 const removeDups = (arr) => {
@@ -534,15 +551,6 @@ const stateFour = (player) => {
   document.getElementById('instructionMessage').setAttribute('style', 'white-space: pre;');
   document.getElementById('instructionMessage').textContent = `${player} player lost by conceding. \r\n It is wise to know your limitations, and folly not to push the envelope.\r\n Reload to play again.`;
   document.getElementById('actionButton').style.visibility = "hidden";
-}
-
-const remove = (setArr, toDelArr) => {
-  let index = -1;
-  for (let dels of toDelArr) {
-    index = setArr.indexOf(dels);
-    setArr.splice(index, 1);
-  }
-  return setArr;
 }
 
 const west = (id,chessGame) => {
