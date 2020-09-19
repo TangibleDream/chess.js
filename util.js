@@ -77,6 +77,7 @@ const boardRefresh = (chessGame) => {
               break;
           }
         } else {
+          if (game.getGameState === 2)  addAnchor = true;
           squareColor(i) === "black" ? squares[i].src = "images\\bbkgr.png" : squares[i].src = "images\\wbkgr.png";
         }
         if (addAnchor) {
@@ -155,6 +156,7 @@ const checkKnightY = (loc) => {
   }
   return result;
 }
+
 const east = (id,chessGame) => {
   let cr = compassRose();
   let pieces = JSON.parse(piecesJSON());
@@ -175,18 +177,24 @@ const east = (id,chessGame) => {
 const game = {
   gameState: 0,
   colorPlaying: 'White',
-
+  moveAvailable: [],
   get getGameState() {
     return this.gameState;
   },
   get getColorPlaying() {
     return this.colorPlaying;
   },
+  get getMovesAvailable() {
+    return this.moveAvailable;
+  },
   set setGameState(state) {
     this.gameState = state;
   },
   set setColorPlaying(color) {
     this.colorPlaying = color;
+  },
+  set setMovesAvailable(moves) {
+    this.moveAvailable = moves;
   }
 }
 
@@ -206,13 +214,13 @@ const movePiece = (id,chessGame) => {
             let move = moves(i,chessGame);
             document.getElementById('instructionMessage').setAttribute('style', 'white-space: pre;');
             if (isNaN(move[0])) { document.getElementById('instructionMessage').textContent = `You are blocked (${move}) \r\n Select a different piece.`; }
-            else { document.getElementById('instructionMessage').textContent = `Where would you like to move? (${move})`; }
+            else { stateTwo(move, chessGame);
           }
         break;
       }
     }
   }
-};
+};}
 
 const moves = (id,chessGame) => {
   let pieces = JSON.parse(piecesJSON());
@@ -396,7 +404,6 @@ const moves = (id,chessGame) => {
       let position = -1
       result = [id]
       for (let correction of mathSet){
-        alert(mathSet);
         position = pieces.pieces[id].position + correction
         if (piecePresent(position) === -1  ) {result = result.concat(position);}
         else {
@@ -542,15 +549,26 @@ const southWest = (id,chessGame) => {
 const stateOne = (chessGame) => {
   chessGame.setGameState = 1;
   document.getElementById('instructionMessage').textContent = 'What piece would you like to move?  Press button to end game'
-  document.getElementById('actionButton').textContent = 'Concede Game'
-  document.getElementById('actionButton').addEventListener("click", function(e) { stateFour(chessGame.getColorPlaying) });
+  actionButton.textContent = 'Concede Game'
+  actionButton.removeEventListener("click", stateOneBound);
+  actionButton.addEventListener("click", stateFourBound);
+}
+
+const stateTwo = (move, chessGame) => {
+  chessGame.setGameState = 2;
+  chessGame.setMovesAvailable = move;
+  document.getElementById('instructionMessage').textContent = `Where would you like to move? \r\n Press button too select another piece. (${move})`;
+  actionButton.textContent = 'Go Back'
+  actionButton.removeEventListener("click", stateFourBound);
+  actionButton.addEventListener("click", stateOneBound);
+  boardRefresh(chessGame);
 }
 
 const stateFour = (player) => {
   chessGame.setGameState = 4;
   document.getElementById('instructionMessage').setAttribute('style', 'white-space: pre;');
   document.getElementById('instructionMessage').textContent = `${player} player lost by conceding. \r\n It is wise to know your limitations, and folly not to push the envelope.\r\n Reload to play again.`;
-  document.getElementById('actionButton').style.visibility = "hidden";
+  actionButton.style.visibility = "hidden";
 }
 
 const west = (id,chessGame) => {
@@ -573,4 +591,7 @@ const west = (id,chessGame) => {
 let chessGame = game;
 boardRefresh(chessGame);
 document.getElementById('instructionMessage').textContent = 'Press start to play.';
-document.getElementById('actionButton').addEventListener("click", stateOne.bind(null, chessGame));
+const actionButton = document.getElementById('actionButton');
+const stateOneBound = stateOne.bind(null, chessGame);
+const stateFourBound = stateFour.bind(null, chessGame.getColorPlaying);
+actionButton.addEventListener("click", stateOneBound);
