@@ -81,82 +81,82 @@
       "captured":false
     },
     {
-      "piece":"White Pawn One",
+      "piece":"White Pawn",
       "position":48,
       "captured":false
     },
     {
-      "piece":"White Pawn Two",
+      "piece":"White Pawn",
       "position":49,
       "captured":false
     },
     {
-      "piece":"White Pawn Three",
+      "piece":"White Pawn",
       "position":50,
       "captured":false
     },
     {
-      "piece":"White Pawn Four",
+      "piece":"White Pawn",
       "position":51,
       "captured":false
     },
     {
-      "piece":"White Pawn Five",
+      "piece":"White Pawn",
       "position":52,
       "captured":false
     },
     {
-      "piece":"White Pawn Six",
+      "piece":"White Pawn",
       "position":53,
       "captured":false
     },
     {
-      "piece":"White Pawn Seven",
+      "piece":"White Pawn",
       "position":54,
       "captured":false
     },
     {
-      "piece":"White Pawn Eight",
+      "piece":"White Pawn",
       "position":55,
       "captured":false
     },
     {
-      "piece":"Black Pawn Eight",
+      "piece":"Black Pawn",
       "position":8,
       "captured":false
     },
     {
-      "piece":"Black Pawn Seven",
+      "piece":"Black Pawn",
       "position":9,
       "captured":false
     },
     {
-      "piece":"Black Pawn Six",
+      "piece":"Black Pawn",
       "position":10,
       "captured":false
     },
     {
-      "piece":"Black Pawn Five",
+      "piece":"Black Pawn",
       "position":11,
       "captured":false
     },
     {
-      "piece":"Black Pawn Four",
+      "piece":"Black Pawn",
       "position":12,
       "captured":false
     },
     {
-      "piece":"Black Pawn Three",
+      "piece":"Black Pawn",
       "position":13,
       "captured":false
     },
     {
-      "piece":"Black Pawn Two",
+      "piece":"Black Pawn",
       "position":14,
       "captured":false
     },
     {
-      "piece":"Black Pawn One",
+      "piece":"Black Pawn",
       "position":15,
       "captured":false
     }

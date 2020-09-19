@@ -35,16 +35,9 @@ const boardRefresh = (chessGame) => {
               break;
             case 'White King Rook' :
             case 'White Queen Rook' :
-               squareColor(i) === "black" ? squares[i].src = "images\\wrookbbkgr.png" : squares[i].src = "images\\wrookwbkgr.png";
-               break;
-            case 'White Pawn One' :
-            case 'White Pawn Two' :
-            case 'White Pawn Three' :
-            case 'White Pawn Four' :
-            case 'White Pawn Five' :
-            case 'White Pawn Six' :
-            case 'White Pawn Seven' :
-            case 'White Pawn Eight' :
+              squareColor(i) === "black" ? squares[i].src = "images\\wrookbbkgr.png" : squares[i].src = "images\\wrookwbkgr.png";
+              break;
+            case 'White Pawn':
               squareColor(i) === "black" ? squares[i].src = "images\\wpwnbbkgr.png" : squares[i].src = "images\\wpwnwbkgr.png";
               break;
             case 'Black King' :
@@ -63,16 +56,9 @@ const boardRefresh = (chessGame) => {
               break;
             case 'Black King Rook' :
             case 'Black Queen Rook' :
-               squareColor(i) === "black" ? squares[i].src = "images\\brookbbkgr.png" : squares[i].src = "images\\brookwbkgr.png";
-               break;
-            case 'Black Pawn One' :
-            case 'Black Pawn Two' :
-            case 'Black Pawn Three' :
-            case 'Black Pawn Four' :
-            case 'Black Pawn Five' :
-            case 'Black Pawn Six' :
-            case 'Black Pawn Seven' :
-            case 'Black Pawn Eight' :
+              squareColor(i) === "black" ? squares[i].src = "images\\brookbbkgr.png" : squares[i].src = "images\\brookwbkgr.png";
+              break;
+            case 'Black Pawn' :
               squareColor(i) === "black" ? squares[i].src = "images\\bpwnbbkgr.png" : squares[i].src = "images\\bpwnwbkgr.png";
               break;
           }
@@ -178,6 +164,7 @@ const game = {
   gameState: 0,
   colorPlaying: 'White',
   moveAvailable: [],
+  chosenPiece: -1,
   get getGameState() {
     return this.gameState;
   },
@@ -187,6 +174,9 @@ const game = {
   get getMovesAvailable() {
     return this.moveAvailable;
   },
+  get getChosenPiece() {
+      return this.chosenPiece;
+  },
   set setGameState(state) {
     this.gameState = state;
   },
@@ -195,32 +185,77 @@ const game = {
   },
   set setMovesAvailable(moves) {
     this.moveAvailable = moves;
+  },
+  set setChosenPiece(pieceLocation) {
+    this.chosenPiece = pieceLocation;
   }
 }
 
 const movePiece = (id,chessGame) => {
   let pieces = JSON.parse(piecesJSON());
+  let capture = false;
+  let capturePiece = -1;
+  let init = false;
   for (let i = 0; i < 32; i ++){
     if (pieces.pieces[i].position === parseInt(id)){
       switch(chessGame.getGameState) {
         case 0:
           alert(`This piece is ${pieces.pieces[i].piece}`);
         break;
+        case 2:
+          capture = true;
+          capturePiece = pieces.pieces[i];
+        break;
         case 1:
           if(pieces.pieces[i].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)){
-            document.getElementById('instructionMessage').setAttribute('style', 'white-space: pre;');
-            document.getElementById('instructionMessage').textContent = `This is not a ${chessGame.getColorPlaying.toLowerCase()} player piece. \r\n Select your own color piece.`;
+            instructionMessage.setAttribute('style', 'white-space: pre;');
+            instructionMessage.textContent = `This is not a ${chessGame.getColorPlaying.toLowerCase()} player piece. \r\n Select your own color piece.`;
           } else {
             let move = moves(i,chessGame);
-            document.getElementById('instructionMessage').setAttribute('style', 'white-space: pre;');
-            if (isNaN(move[0])) { document.getElementById('instructionMessage').textContent = `You are blocked (${move}) \r\n Select a different piece.`; }
-            else { stateTwo(move, chessGame);
+            instructionMessage.setAttribute('style', 'white-space: pre;');
+            if (isNaN(move[0])) { instructionMessage.textContent = `You are blocked (${move}) \r\n Select a different piece.`; }
+            else {
+              stateTwo(move, chessGame);
+              init = true;
+            }
           }
         break;
       }
     }
   }
-};}
+  if (game.getGameState === 2 && init === false) {
+    if (game.getMovesAvailable.includes(parseInt(id))) {
+      alert ('move and capture logic go right here');
+    } else {
+      let pieceCode = pieces.pieces[chessGame.getChosenPiece].piece.slice(pieces.pieces[chessGame.getChosenPiece].piece.length - 2);
+      switch (pieceCode) {
+        case 'wn':
+          let pm = '1 space';
+          ([48,49,50,51,52,55].includes(chessGame.getChosenPiece) ? pm = '2 spaces' : pm = '1 space');
+          instructionMessage.textContent = `This pawn can move ${pm} and capture diagonally 1 space where possible. Either select a valid square or \r\n Press \'go back\' and Select a different piece.`;
+        break;
+        case 'ok':
+          instructionMessage.textContent = `A rook can move vertically and horizontally where not blocked. Either select a valid square or \r\n Press \'go back\' and Select a different piece.`;
+        break;
+        case 'ht':
+          instructionMessage.textContent = `A knight can move in a 1-2 or 2-1 L pattern. Either select a valid square or \r\n Press \'go back\' and Select a different piece.`;
+        break;
+        case 'op':
+          instructionMessage.textContent = `A bishop can move diagonally where not blocked. Either select a valid square or \r\n Press \'go back\' and Select a different piece.`;
+        break;
+        case 'en':
+          instructionMessage.textContent = `A Queen can move vertically, horizontally, and diagonally where not blocked. Either select a valid square or \r\n Press \'go back\' and Select a different piece.`;
+        break;
+        case 'ng':
+          instructionMessage.textContent = `A King can move vertically, horizontally, and diagonally 1 space  where not blocked. Either select a valid square or \r\n Press \'go back\' and Select a different piece.`;
+        break;
+        default :
+          instructionMessage.textContent = 'This piece can\'t move here. Either select a valid square or \r\n Press \'go back\' and Select a different piece.';
+        break;
+      }
+    }
+  }
+};
 
 const moves = (id,chessGame) => {
   let pieces = JSON.parse(piecesJSON());
@@ -356,22 +391,8 @@ const moves = (id,chessGame) => {
           }
       }
     break;
-    case "White Pawn One" :
-    case "White Pawn Two" :
-    case "White Pawn Three" :
-    case "White Pawn Four" :
-    case "White Pawn Five" :
-    case "White Pawn Six" :
-    case "White Pawn Seven" :
-    case "White Pawn Eight" :
-    case "Black Pawn One" :
-    case "Black Pawn Two" :
-    case "Black Pawn Three" :
-    case "Black Pawn Four" :
-    case "Black Pawn Five" :
-    case "Black Pawn Six" :
-    case "Black Pawn Seven" :
-    case "Black Pawn Eight" :
+    case "White Pawn" :
+    case "Black Pawn" :
     {
       if (getY(pieces.pieces[id].position) > 1) { nm = north(id,chessGame,true)};
       if (getY(pieces.pieces[id].position) > 1 && getX(pieces.pieces[id].position) > 1) { nwm = northWest(id,chessGame,true)};
@@ -557,8 +578,9 @@ const stateOne = (chessGame) => {
 
 const stateTwo = (move, chessGame) => {
   chessGame.setGameState = 2;
-  chessGame.setMovesAvailable = move;
-  document.getElementById('instructionMessage').textContent = `Where would you like to move? \r\n Press button too select another piece. (${move})`;
+  chessGame.setMovesAvailable = move.slice(1);
+  chessGame.setChosenPiece = move[0];
+  instructionMessage.textContent = `Where would you like to move? \r\n Press button too select another piece. (${chessGame.getMovesAvailable})`;
   actionButton.textContent = 'Go Back'
   actionButton.removeEventListener("click", stateFourBound);
   actionButton.addEventListener("click", stateOneBound);
@@ -591,8 +613,9 @@ const west = (id,chessGame) => {
 
 let chessGame = game;
 boardRefresh(chessGame);
-document.getElementById('instructionMessage').textContent = 'Press start to play.';
 const actionButton = document.getElementById('actionButton');
+const instructionMessage = document.getElementById('instructionMessage');
+instructionMessage.textContent = 'Press start to play.';
 const stateOneBound = stateOne.bind(null, chessGame);
 const stateFourBound = stateFour.bind(null, chessGame.getColorPlaying);
 actionButton.addEventListener("click", stateOneBound);
