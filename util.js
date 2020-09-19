@@ -548,6 +548,7 @@ const southWest = (id,chessGame) => {
 
 const stateOne = (chessGame) => {
   chessGame.setGameState = 1;
+  boardRefresh(chessGame);
   document.getElementById('instructionMessage').textContent = 'What piece would you like to move?  Press button to end game'
   actionButton.textContent = 'Concede Game'
   actionButton.removeEventListener("click", stateOneBound);
