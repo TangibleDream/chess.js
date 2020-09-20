@@ -226,9 +226,9 @@ const movePiece = (id,chessGame) => {
   }
   if (game.getGameState === 2 && init === false) {
     if (game.getMovesAvailable.includes(parseInt(id))) {
+      if (capture === true) { capturePiece.position = -1 };
       chessGame.setDestination = [chessGame.getChosenPiece, parseInt(id)];
-      console.log(chessGame.getPieces.pieces[chessGame.getChosenPiece]);
-      stateOne(chessGame);
+      stateOne(chessGame); //placeholder for real code.
     } else {
       let pieceCode = chessGame.getPieces.pieces[chessGame.getChosenPiece].piece.slice(chessGame.getPieces.pieces[chessGame.getChosenPiece].piece.length - 2);
       switch (pieceCode) {
