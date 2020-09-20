@@ -1,5 +1,5 @@
 'use strict';
-import { squareColor, piecesJSON, getY, getX } from './helpers.js';
+import { squareColor, piecesJSON, getY, getX, flipValue } from './helpers.js';
 
 const boardRefresh = (chessGame) => {
     let squares = [];
@@ -102,7 +102,16 @@ const compassRose = () => {
     set setNoMoreMoves(nMMBool) { this.noMoreMoves = nMMBool; }
   }
   return(Object);
-}
+};
+
+const changePlayers = (chessGame) => {
+  (chessGame.getColorPlaying === 'White' ? chessGame.setColorPlaying = 'Black' : chessGame.setColorPlaying = 'White');
+  for(let i = 0; i < 32; i ++) {
+    //alert(`${chessGame.getPieces.pieces[i].piece}`)
+    if (chessGame.getPieces.pieces[i].position != -1) chessGame.setDestination = [i, flipValue(chessGame.getPieces.pieces[i].position)];
+  }
+  stateOne(chessGame);
+};
 
 const checkKnightX = (loc) => {
   let result = []
@@ -121,7 +130,7 @@ const checkKnightX = (loc) => {
       break;
   }
   return result;
-}
+};
 
 const checkKnightY = (loc) => {
   let result = []
@@ -140,7 +149,7 @@ const checkKnightY = (loc) => {
       break;
   }
   return result;
-}
+};
 
 const east = (id,chessGame) => {
   let cr = compassRose();
@@ -156,7 +165,7 @@ const east = (id,chessGame) => {
     if (chessGame.getPieces.pieces[id].position + (1 * (cr.getMoves + 1)) > 63 || getX(chessGame.getPieces.pieces[id].position + (1 * (cr.getMoves + 1))) === 1 ) cr.setNoMoreMoves = true;
   }
   return cr.getResult;
-}
+};
 
 const game = {
   pieces: JSON.parse(piecesJSON()),
@@ -194,7 +203,7 @@ const game = {
   set setDestination(pdArr) {
     this.pieces.pieces[pdArr[0]].position = pdArr[1];
   }
-}
+};
 
 const movePiece = (id,chessGame) => {
   let capture = false;
@@ -228,13 +237,14 @@ const movePiece = (id,chessGame) => {
     if (game.getMovesAvailable.includes(parseInt(id))) {
       if (capture === true) { capturePiece.position = -1 };
       chessGame.setDestination = [chessGame.getChosenPiece, parseInt(id)];
-      stateOne(chessGame); //placeholder for real code.
+      boardRefresh(chessGame);
+      stateThree(chessGame);
     } else {
       let pieceCode = chessGame.getPieces.pieces[chessGame.getChosenPiece].piece.slice(chessGame.getPieces.pieces[chessGame.getChosenPiece].piece.length - 2);
       switch (pieceCode) {
         case 'wn':
           let pm = '1 space';
-          ([48,49,50,51,52,55].includes(chessGame.getPieces.pieces[chessGame.getChosenPiece].position) ? pm = '2 spaces' : pm = '1 space');
+          ([48,49,50,51,52,53,54,55].includes(chessGame.getPieces.pieces[chessGame.getChosenPiece].position) ? pm = '2 spaces' : pm = '1 space');
           instructionMessage.textContent = `This pawn can move ${pm} and capture diagonally 1 space where possible. Either select a valid square or \r\n Press \'go back\' and Select a different piece.`;
         break;
         case 'ok':
@@ -437,7 +447,7 @@ const moves = (id,chessGame) => {
     break;
   }
   return result;
-}
+};
 
 const north = (id,chessGame,isPawn = false) => {
   let cr = compassRose();
@@ -453,7 +463,7 @@ const north = (id,chessGame,isPawn = false) => {
     if (chessGame.getPieces.pieces[id].position - (8 * (cr.getMoves + 1)) < 0) cr.setNoMoreMoves = true;
   }
   return cr.getResult;
-}
+};
 
 const northEast = (id,chessGame,isPawn = false) => {
   let cr = compassRose();
@@ -470,7 +480,7 @@ const northEast = (id,chessGame,isPawn = false) => {
     if (chessGame.getPieces.pieces[id].position - (7 * (cr.getMoves + 1)) < 0  || getX(chessGame.getPieces.pieces[id].position - (7 * (cr.getMoves + 1))) === 1) cr.setNoMoreMoves = true;
   }
   return cr.getResult;
-}
+};
 
 const northWest = (id,chessGame,isPawn = false) => {
   let cr = compassRose();
@@ -487,7 +497,7 @@ const northWest = (id,chessGame,isPawn = false) => {
     if (chessGame.getPieces.pieces[id].position - (9 * (cr.getMoves + 1)) < 0 || getX(chessGame.getPieces.pieces[id].position - (9 * (cr.getMoves + 1))) === 8) cr.setNoMoreMoves = true;
   }
   return cr.getResult;
-}
+};
 
 const piecePresent = (num) => {
     let result = -1;
@@ -498,7 +508,7 @@ const piecePresent = (num) => {
         }
     }
     return result
-}
+};
 
 const remove = (setArr, toDelArr) => {
   let index = -1;
@@ -507,12 +517,12 @@ const remove = (setArr, toDelArr) => {
     setArr.splice(index, 1);
   }
   return setArr;
-}
+};
 
 const removeDups = (arr) => {
   let result = [...new Set(arr)];
   return result;
-}
+};
 
 const south = (id,chessGame) => {
   let cr = compassRose();
@@ -528,7 +538,7 @@ const south = (id,chessGame) => {
     if (chessGame.getPieces.pieces[id].position + (8 * (cr.getMoves + 1)) > 63) cr.setNoMoreMoves = true;
   }
   return cr.getResult;
-}
+};
 
 const southEast = (id,chessGame) => {
   let cr = compassRose();
@@ -544,7 +554,7 @@ const southEast = (id,chessGame) => {
     if (chessGame.getPieces.pieces[id].position + (9 * (cr.getMoves + 1)) > 63  || getX(chessGame.getPieces.pieces[id].position + (9 * (cr.getMoves + 1))) === 1) cr.setNoMoreMoves = true;
   }
   return cr.getResult;
-}
+};
 
 const southWest = (id,chessGame) => {
   let cr = compassRose();
@@ -560,7 +570,7 @@ const southWest = (id,chessGame) => {
     if (chessGame.getPieces.pieces[id].position + (7 * (cr.getMoves + 1)) > 63  || getX(chessGame.getPieces.pieces[id].position + (7 * (cr.getMoves + 1))) === 8) cr.setNoMoreMoves = true;
   }
   return cr.getResult;
-}
+};
 
 const stateOne = (chessGame) => {
   chessGame.setGameState = 1;
@@ -568,8 +578,9 @@ const stateOne = (chessGame) => {
   document.getElementById('instructionMessage').textContent = 'What piece would you like to move?  Press button to end game'
   actionButton.textContent = 'Concede Game'
   actionButton.removeEventListener("click", stateOneBound);
+  actionButton.removeEventListener("click", changePlayersBound);
   actionButton.addEventListener("click", stateFourBound);
-}
+};
 
 const stateTwo = (move, chessGame) => {
   chessGame.setGameState = 2;
@@ -580,14 +591,22 @@ const stateTwo = (move, chessGame) => {
   actionButton.removeEventListener("click", stateFourBound);
   actionButton.addEventListener("click", stateOneBound);
   boardRefresh(chessGame);
-}
+};
+
+const stateThree = (chessGame) => {
+  chessGame.setGameState = 3;
+  instructionMessage.textContent = `Press button to end turn.`;
+  actionButton.textContent = 'End Turn'
+  actionButton.removeEventListener("click", stateOneBound);
+  actionButton.addEventListener("click", changePlayersBound);
+};
 
 const stateFour = (player) => {
   chessGame.setGameState = 4;
   document.getElementById('instructionMessage').setAttribute('style', 'white-space: pre;');
   document.getElementById('instructionMessage').textContent = `${player} player lost by conceding. \r\n It is wise to know your limitations, and folly not to push the envelope.\r\n Reload to play again.`;
   actionButton.style.visibility = "hidden";
-}
+};
 
 const west = (id,chessGame) => {
   let cr = compassRose();
@@ -603,7 +622,7 @@ const west = (id,chessGame) => {
     if (chessGame.getPieces.pieces[id].position - (1 * (cr.getMoves + 1)) < 0 || getX(chessGame.getPieces.pieces[id].position - (1 * (cr.getMoves + 1))) === 8 ) cr.setNoMoreMoves = true;
   }
   return cr.getResult;
-}
+};
 
 let chessGame = game;
 boardRefresh(chessGame);
@@ -612,4 +631,5 @@ const instructionMessage = document.getElementById('instructionMessage');
 instructionMessage.textContent = 'Press start to play.';
 const stateOneBound = stateOne.bind(null, chessGame);
 const stateFourBound = stateFour.bind(null, chessGame.getColorPlaying);
+const changePlayersBound = changePlayers.bind(null, chessGame);
 actionButton.addEventListener("click", stateOneBound);
