@@ -203,9 +203,6 @@ const movePiece = (id,chessGame) => {
   for (let i = 0; i < 32; i ++){
     if (chessGame.getPieces.pieces[i].position === parseInt(id)){
       switch(chessGame.getGameState) {
-        case 0:
-          alert(`This piece is ${chessGame.getPieces.pieces[i].piece}`);
-        break;
         case 2:
           capture = true;
           capturePiece = chessGame.getPieces.pieces[i];
@@ -237,7 +234,7 @@ const movePiece = (id,chessGame) => {
       switch (pieceCode) {
         case 'wn':
           let pm = '1 space';
-          ([48,49,50,51,52,55].includes(chessGame.getChosenPiece) ? pm = '2 spaces' : pm = '1 space');
+          ([48,49,50,51,52,55].includes(chessGame.getPieces.pieces[chessGame.getChosenPiece].position) ? pm = '2 spaces' : pm = '1 space');
           instructionMessage.textContent = `This pawn can move ${pm} and capture diagonally 1 space where possible. Either select a valid square or \r\n Press \'go back\' and Select a different piece.`;
         break;
         case 'ok':
