@@ -2,7 +2,6 @@
 import { squareColor, piecesJSON, getY, getX } from './helpers.js';
 
 const boardRefresh = (chessGame) => {
-    let pieces = JSON.parse(piecesJSON());
     let squares = [];
     let anchorElement = [];
     let addAnchor = false;
@@ -18,7 +17,7 @@ const boardRefresh = (chessGame) => {
         pieceNum = piecePresent(i);
         if (pieceNum > -1){
           addAnchor = true;
-          switch (pieces.pieces[pieceNum].piece){
+          switch (chessGame.getPieces.pieces[pieceNum].piece){
             case 'White King' :
               squareColor(i) === "black" ? squares[i].src = "images\\wkingbbkgr.png" : squares[i].src = "images\\wkingwbkgr.png";
               break;
@@ -145,26 +144,29 @@ const checkKnightY = (loc) => {
 
 const east = (id,chessGame) => {
   let cr = compassRose();
-  let pieces = JSON.parse(piecesJSON());
   while (cr.getNoMoreMoves === false){
-    cr.setLocation = piecePresent(pieces.pieces[id].position + (1 * (cr.getMoves + 1)));
+    cr.setLocation = piecePresent(chessGame.getPieces.pieces[id].position + (1 * (cr.getMoves + 1)));
     if (cr.getLocation != -1) {
-      if (pieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
-        cr.setResultInc = pieces.pieces[id].position + (1 * (cr.getMoves + 1));
+      if (chessGame.getPieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
+        cr.setResultInc = chessGame.getPieces.pieces[id].position + (1 * (cr.getMoves + 1));
         cr.setNoMoreMoves = true; }
-      if (cr.getMoves === 0){ cr.setResult = pieces.pieces[cr.getLocation].piece; }
+      if (cr.getMoves === 0){ cr.setResult = chessGame.getPieces.pieces[cr.getLocation].piece; }
       cr.setNoMoreMoves = true;
-    } else { cr.setResultInc = pieces.pieces[id].position + (1 * (cr.getMoves + 1)); }
-    if (pieces.pieces[id].position + (1 * (cr.getMoves + 1)) > 63 || getX(pieces.pieces[id].position + (1 * (cr.getMoves + 1))) === 1 ) cr.setNoMoreMoves = true;
+    } else { cr.setResultInc = chessGame.getPieces.pieces[id].position + (1 * (cr.getMoves + 1)); }
+    if (chessGame.getPieces.pieces[id].position + (1 * (cr.getMoves + 1)) > 63 || getX(chessGame.getPieces.pieces[id].position + (1 * (cr.getMoves + 1))) === 1 ) cr.setNoMoreMoves = true;
   }
   return cr.getResult;
 }
 
 const game = {
+  pieces: JSON.parse(piecesJSON()),
   gameState: 0,
   colorPlaying: 'White',
   moveAvailable: [],
   chosenPiece: -1,
+  get getPieces() {
+      return this.pieces;
+  },
   get getGameState() {
     return this.gameState;
   },
@@ -188,26 +190,28 @@ const game = {
   },
   set setChosenPiece(pieceLocation) {
     this.chosenPiece = pieceLocation;
+  },
+  set setDestination(pdArr) {
+    this.pieces.pieces[pdArr[0]].position = pdArr[1];
   }
 }
 
 const movePiece = (id,chessGame) => {
-  let pieces = JSON.parse(piecesJSON());
   let capture = false;
   let capturePiece = -1;
   let init = false;
   for (let i = 0; i < 32; i ++){
-    if (pieces.pieces[i].position === parseInt(id)){
+    if (chessGame.getPieces.pieces[i].position === parseInt(id)){
       switch(chessGame.getGameState) {
         case 0:
-          alert(`This piece is ${pieces.pieces[i].piece}`);
+          alert(`This piece is ${chessGame.getPieces.pieces[i].piece}`);
         break;
         case 2:
           capture = true;
-          capturePiece = pieces.pieces[i];
+          capturePiece = chessGame.getPieces.pieces[i];
         break;
         case 1:
-          if(pieces.pieces[i].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)){
+          if(chessGame.getPieces.pieces[i].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)){
             instructionMessage.setAttribute('style', 'white-space: pre;');
             instructionMessage.textContent = `This is not a ${chessGame.getColorPlaying.toLowerCase()} player piece. \r\n Select your own color piece.`;
           } else {
@@ -225,9 +229,11 @@ const movePiece = (id,chessGame) => {
   }
   if (game.getGameState === 2 && init === false) {
     if (game.getMovesAvailable.includes(parseInt(id))) {
-      alert ('move and capture logic go right here');
+      chessGame.setDestination = [chessGame.getChosenPiece, parseInt(id)];
+      console.log(chessGame.getPieces.pieces[chessGame.getChosenPiece]);
+      stateOne(chessGame);
     } else {
-      let pieceCode = pieces.pieces[chessGame.getChosenPiece].piece.slice(pieces.pieces[chessGame.getChosenPiece].piece.length - 2);
+      let pieceCode = chessGame.getPieces.pieces[chessGame.getChosenPiece].piece.slice(chessGame.getPieces.pieces[chessGame.getChosenPiece].piece.length - 2);
       switch (pieceCode) {
         case 'wn':
           let pm = '1 space';
@@ -258,7 +264,6 @@ const movePiece = (id,chessGame) => {
 };
 
 const moves = (id,chessGame) => {
-  let pieces = JSON.parse(piecesJSON());
   let result = [];
   let nm = [];
   let sm = [];
@@ -268,16 +273,16 @@ const moves = (id,chessGame) => {
   let nem = [];
   let sem = [];
   let swm = [];
-  switch (pieces.pieces[id].piece) {
+  switch (chessGame.getPieces.pieces[id].piece) {
     case "White King Rook" :
     case "Black King Rook" :
     case "White Queen Rook" :
     case "Black Queen Rook" :
     {
-      if (getY(pieces.pieces[id].position) > 1) { nm = north(id,chessGame)};
-      if (getY(pieces.pieces[id].position) < 8) { sm = south(id,chessGame)};
-      if (getX(pieces.pieces[id].position) < 8) { em = east(id,chessGame)};
-      if (getX(pieces.pieces[id].position) > 1) { wm = west(id,chessGame)};
+      if (getY(chessGame.getPieces.pieces[id].position) > 1) { nm = north(id,chessGame)};
+      if (getY(chessGame.getPieces.pieces[id].position) < 8) { sm = south(id,chessGame)};
+      if (getX(chessGame.getPieces.pieces[id].position) < 8) { em = east(id,chessGame)};
+      if (getX(chessGame.getPieces.pieces[id].position) > 1) { wm = west(id,chessGame)};
       let blocked = true;
       if (Number.isInteger(nm[0]) || Number.isInteger(sm[0]) || Number.isInteger(em[0]) || Number.isInteger(wm[0])) blocked = false;
       if (blocked === false){
@@ -299,10 +304,10 @@ const moves = (id,chessGame) => {
     case "White Queen Bishop" :
     case "Black Queen Bishop" :
     {
-      if (getY(pieces.pieces[id].position) > 1 && getX(pieces.pieces[id].position) > 1) { nwm = northWest(id,chessGame)};
-      if (getY(pieces.pieces[id].position) > 1 && getX(pieces.pieces[id].position) < 8) { nem = northEast(id,chessGame)};
-      if (getY(pieces.pieces[id].position) < 8 && getX(pieces.pieces[id].position) < 8) { sem = southEast(id,chessGame)};
-      if (getY(pieces.pieces[id].position) < 8 && getX(pieces.pieces[id].position) > 1) { swm = southWest(id,chessGame)};
+      if (getY(chessGame.getPieces.pieces[id].position) > 1 && getX(chessGame.getPieces.pieces[id].position) > 1) { nwm = northWest(id,chessGame)};
+      if (getY(chessGame.getPieces.pieces[id].position) > 1 && getX(chessGame.getPieces.pieces[id].position) < 8) { nem = northEast(id,chessGame)};
+      if (getY(chessGame.getPieces.pieces[id].position) < 8 && getX(chessGame.getPieces.pieces[id].position) < 8) { sem = southEast(id,chessGame)};
+      if (getY(chessGame.getPieces.pieces[id].position) < 8 && getX(chessGame.getPieces.pieces[id].position) > 1) { swm = southWest(id,chessGame)};
         let blocked = true;
         if (Number.isInteger(nwm[0]) || Number.isInteger(nem[0]) || Number.isInteger(sem[0]) || Number.isInteger(swm[0])) blocked = false;
         if (blocked === false){
@@ -322,14 +327,14 @@ const moves = (id,chessGame) => {
     case "White Queen" :
     case "Black Queen" :
     {
-      if (getY(pieces.pieces[id].position) > 1) { nm = north(id,chessGame)};
-      if (getY(pieces.pieces[id].position) < 8) { sm = south(id,chessGame)};
-      if (getX(pieces.pieces[id].position) < 8) { em = east(id,chessGame)};
-      if (getX(pieces.pieces[id].position) > 1) { wm = west(id,chessGame)};
-      if (getY(pieces.pieces[id].position) > 1 && getX(pieces.pieces[id].position) > 1) { nwm = northWest(id,chessGame)};
-      if (getY(pieces.pieces[id].position) > 1 && getX(pieces.pieces[id].position) < 8) { nem = northEast(id,chessGame)};
-      if (getY(pieces.pieces[id].position) < 8 && getX(pieces.pieces[id].position) < 8) { sem = southEast(id,chessGame)};
-      if (getY(pieces.pieces[id].position) < 8 && getX(pieces.pieces[id].position) > 1) { swm = southWest(id,chessGame)};
+      if (getY(chessGame.getPieces.pieces[id].position) > 1) { nm = north(id,chessGame)};
+      if (getY(chessGame.getPieces.pieces[id].position) < 8) { sm = south(id,chessGame)};
+      if (getX(chessGame.getPieces.pieces[id].position) < 8) { em = east(id,chessGame)};
+      if (getX(chessGame.getPieces.pieces[id].position) > 1) { wm = west(id,chessGame)};
+      if (getY(chessGame.getPieces.pieces[id].position) > 1 && getX(chessGame.getPieces.pieces[id].position) > 1) { nwm = northWest(id,chessGame)};
+      if (getY(chessGame.getPieces.pieces[id].position) > 1 && getX(chessGame.getPieces.pieces[id].position) < 8) { nem = northEast(id,chessGame)};
+      if (getY(chessGame.getPieces.pieces[id].position) < 8 && getX(chessGame.getPieces.pieces[id].position) < 8) { sem = southEast(id,chessGame)};
+      if (getY(chessGame.getPieces.pieces[id].position) < 8 && getX(chessGame.getPieces.pieces[id].position) > 1) { swm = southWest(id,chessGame)};
         let blocked = true;
         if (Number.isInteger(nm[0]) || Number.isInteger(sm[0]) || Number.isInteger(em[0]) || Number.isInteger(wm[0]) ||
         Number.isInteger(nwm[0]) || Number.isInteger(nem[0]) || Number.isInteger(sem[0]) || Number.isInteger(swm[0])) blocked = false;
@@ -358,14 +363,14 @@ const moves = (id,chessGame) => {
       case "White King" :
       case "Black King" :
       {
-        if (getY(pieces.pieces[id].position) > 1) { nm = north(id,chessGame)};
-        if (getY(pieces.pieces[id].position) < 8) { sm = south(id,chessGame)};
-        if (getX(pieces.pieces[id].position) < 8) { em = east(id,chessGame)};
-        if (getX(pieces.pieces[id].position) > 1) { wm = west(id,chessGame)};
-        if (getY(pieces.pieces[id].position) > 1 && getX(pieces.pieces[id].position) > 1) { nwm = northWest(id,chessGame)};
-        if (getY(pieces.pieces[id].position) > 1 && getX(pieces.pieces[id].position) < 8) { nem = northEast(id,chessGame)};
-        if (getY(pieces.pieces[id].position) < 8 && getX(pieces.pieces[id].position) < 8) { sem = southEast(id,chessGame)};
-        if (getY(pieces.pieces[id].position) < 8 && getX(pieces.pieces[id].position) > 1) { swm = southWest(id,chessGame)};
+        if (getY(chessGame.getPieces.pieces[id].position) > 1) { nm = north(id,chessGame)};
+        if (getY(chessGame.getPieces.pieces[id].position) < 8) { sm = south(id,chessGame)};
+        if (getX(chessGame.getPieces.pieces[id].position) < 8) { em = east(id,chessGame)};
+        if (getX(chessGame.getPieces.pieces[id].position) > 1) { wm = west(id,chessGame)};
+        if (getY(chessGame.getPieces.pieces[id].position) > 1 && getX(chessGame.getPieces.pieces[id].position) > 1) { nwm = northWest(id,chessGame)};
+        if (getY(chessGame.getPieces.pieces[id].position) > 1 && getX(chessGame.getPieces.pieces[id].position) < 8) { nem = northEast(id,chessGame)};
+        if (getY(chessGame.getPieces.pieces[id].position) < 8 && getX(chessGame.getPieces.pieces[id].position) < 8) { sem = southEast(id,chessGame)};
+        if (getY(chessGame.getPieces.pieces[id].position) < 8 && getX(chessGame.getPieces.pieces[id].position) > 1) { swm = southWest(id,chessGame)};
           let blocked = true;
           if (Number.isInteger(nm[0]) || Number.isInteger(sm[0]) || Number.isInteger(em[0]) || Number.isInteger(wm[0]) ||
           Number.isInteger(nwm[0]) || Number.isInteger(nem[0]) || Number.isInteger(sem[0]) || Number.isInteger(swm[0])) blocked = false;
@@ -394,14 +399,14 @@ const moves = (id,chessGame) => {
     case "White Pawn" :
     case "Black Pawn" :
     {
-      if (getY(pieces.pieces[id].position) > 1) { nm = north(id,chessGame,true)};
-      if (getY(pieces.pieces[id].position) > 1 && getX(pieces.pieces[id].position) > 1) { nwm = northWest(id,chessGame,true)};
-      if (getY(pieces.pieces[id].position) > 1 && getX(pieces.pieces[id].position) < 8) { nem = northEast(id,chessGame,true)};
+      if (getY(chessGame.getPieces.pieces[id].position) > 1) { nm = north(id,chessGame,true)};
+      if (getY(chessGame.getPieces.pieces[id].position) > 1 && getX(chessGame.getPieces.pieces[id].position) > 1) { nwm = northWest(id,chessGame,true)};
+      if (getY(chessGame.getPieces.pieces[id].position) > 1 && getX(chessGame.getPieces.pieces[id].position) < 8) { nem = northEast(id,chessGame,true)};
       let blocked = true;
       if (Number.isInteger(nm[0]) || Number.isInteger(nem[0]) || Number.isInteger(nwm[0])) blocked = false;
       if (blocked === false){
         result.push(id);
-        if ([48,49,50,51,52,53,54,55].includes(pieces.pieces[id].position)) {
+        if ([48,49,50,51,52,53,54,55].includes(chessGame.getPieces.pieces[id].position)) {
           if (Number.isInteger(nm[0])) result = result.concat(nm[0], nm[1]);
         }
         else {
@@ -418,17 +423,17 @@ const moves = (id,chessGame) => {
     {
       let mathSet=[-17,-15,-10,-6,6,10,15,17]
       let removeSet = []
-      removeSet = removeSet.concat(checkKnightX(pieces.pieces[id].position))
-      removeSet = removeSet.concat(checkKnightY(pieces.pieces[id].position))
+      removeSet = removeSet.concat(checkKnightX(chessGame.getPieces.pieces[id].position))
+      removeSet = removeSet.concat(checkKnightY(chessGame.getPieces.pieces[id].position))
       removeSet = removeDups(removeSet);
       mathSet = remove(mathSet, removeSet);
       let position = -1
       result = [id]
       for (let correction of mathSet){
-        position = pieces.pieces[id].position + correction
+        position = chessGame.getPieces.pieces[id].position + correction
         if (piecePresent(position) === -1  ) {result = result.concat(position);}
         else {
-          if (pieces.pieces[piecePresent(position)].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) { result = result.concat(position); }
+          if (chessGame.getPieces.pieces[piecePresent(position)].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) { result = result.concat(position); }
         }
       }
     }
@@ -439,62 +444,58 @@ const moves = (id,chessGame) => {
 
 const north = (id,chessGame,isPawn = false) => {
   let cr = compassRose();
-  let pieces = JSON.parse(piecesJSON());
   while (cr.getNoMoreMoves === false){
-    cr.setLocation = piecePresent(pieces.pieces[id].position - (8 * (cr.getMoves + 1)))
+    cr.setLocation = piecePresent(chessGame.getPieces.pieces[id].position - (8 * (cr.getMoves + 1)))
     if (cr.getLocation != -1) {
-      if (pieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0) && isPawn === false) {
-        cr.setResultInc = pieces.pieces[id].position - (8 * (cr.getMoves + 1));
+      if (chessGame.getPieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0) && isPawn === false) {
+        cr.setResultInc = chessGame.getPieces.pieces[id].position - (8 * (cr.getMoves + 1));
         cr.setNoMoreMoves = true; }
-      if (cr.getMoves === 0){ cr.setResult = pieces.pieces[cr.getLocation].piece; }
+      if (cr.getMoves === 0){ cr.setResult = chessGame.getPieces.pieces[cr.getLocation].piece; }
       cr.setNoMoreMoves = true;
-    } else {  cr.setResultInc = pieces.pieces[id].position - (8 * (cr.getMoves + 1)); }
-    if (pieces.pieces[id].position - (8 * (cr.getMoves + 1)) < 0) cr.setNoMoreMoves = true;
+    } else {  cr.setResultInc = chessGame.getPieces.pieces[id].position - (8 * (cr.getMoves + 1)); }
+    if (chessGame.getPieces.pieces[id].position - (8 * (cr.getMoves + 1)) < 0) cr.setNoMoreMoves = true;
   }
   return cr.getResult;
 }
 
 const northEast = (id,chessGame,isPawn = false) => {
   let cr = compassRose();
-  let pieces = JSON.parse(piecesJSON());
   while (cr.getNoMoreMoves === false){
-    cr.setLocation = piecePresent(pieces.pieces[id].position - (7 * (cr.getMoves + 1)))
+    cr.setLocation = piecePresent(chessGame.getPieces.pieces[id].position - (7 * (cr.getMoves + 1)))
     if ((cr.getLocation != -1 && isPawn === false) || (cr.getLocation != -1 && isPawn === true && cr.getMoves === 0)) {
-      if (pieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
-        cr.setResultInc = pieces.pieces[id].position - (7 * (cr.getMoves + 1));
+      if (chessGame.getPieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
+        cr.setResultInc = chessGame.getPieces.pieces[id].position - (7 * (cr.getMoves + 1));
         cr.setNoMoreMoves = true; }
-      if (cr.getMoves === 0){ cr.setResult = pieces.pieces[cr.getLocation].piece; }
+      if (cr.getMoves === 0){ cr.setResult = chessGame.getPieces.pieces[cr.getLocation].piece; }
       cr.setNoMoreMoves = true;
-    } else { if (isPawn === false) {cr.setResultInc = pieces.pieces[id].position - (7 * (cr.getMoves + 1));}
+    } else { if (isPawn === false) {cr.setResultInc = chessGame.getPieces.pieces[id].position - (7 * (cr.getMoves + 1));}
      else { cr.setNoMoreMoves = true }}
-    if (pieces.pieces[id].position - (7 * (cr.getMoves + 1)) < 0  || getX(pieces.pieces[id].position - (7 * (cr.getMoves + 1))) === 1) cr.setNoMoreMoves = true;
+    if (chessGame.getPieces.pieces[id].position - (7 * (cr.getMoves + 1)) < 0  || getX(chessGame.getPieces.pieces[id].position - (7 * (cr.getMoves + 1))) === 1) cr.setNoMoreMoves = true;
   }
   return cr.getResult;
 }
 
 const northWest = (id,chessGame,isPawn = false) => {
   let cr = compassRose();
-  let pieces = JSON.parse(piecesJSON());
   while (cr.getNoMoreMoves === false){
-    cr.setLocation = piecePresent(pieces.pieces[id].position - (9 * (cr.getMoves + 1)))
+    cr.setLocation = piecePresent(chessGame.getPieces.pieces[id].position - (9 * (cr.getMoves + 1)))
     if ((cr.getLocation != -1 && isPawn === false) || (cr.getLocation != -1 && isPawn === true && cr.getMoves === 0)) {
-      if (pieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
-        cr.setResultInc = pieces.pieces[id].position - (9 * (cr.getMoves + 1));
+      if (chessGame.getPieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
+        cr.setResultInc = chessGame.getPieces.pieces[id].position - (9 * (cr.getMoves + 1));
         cr.setNoMoreMoves = true; }
-      if (cr.getMoves === 0){ cr.setResult = pieces.pieces[cr.getLocation].piece; }
+      if (cr.getMoves === 0){ cr.setResult = chessGame.getPieces.pieces[cr.getLocation].piece; }
       cr.setNoMoreMoves = true;
-    } else { if (isPawn === false) { cr.setResultInc = pieces.pieces[id].position - (9 * (cr.getMoves + 1));}
+    } else { if (isPawn === false) { cr.setResultInc = chessGame.getPieces.pieces[id].position - (9 * (cr.getMoves + 1));}
      else { cr.setNoMoreMoves = true }}
-    if (pieces.pieces[id].position - (9 * (cr.getMoves + 1)) < 0 || getX(pieces.pieces[id].position - (9 * (cr.getMoves + 1))) === 8) cr.setNoMoreMoves = true;
+    if (chessGame.getPieces.pieces[id].position - (9 * (cr.getMoves + 1)) < 0 || getX(chessGame.getPieces.pieces[id].position - (9 * (cr.getMoves + 1))) === 8) cr.setNoMoreMoves = true;
   }
   return cr.getResult;
 }
 
 const piecePresent = (num) => {
-    let pieces = JSON.parse(piecesJSON());
     let result = -1;
     for (let i = 0; i < 32; i ++){
-        if (pieces.pieces[i].position === num)
+        if (chessGame.getPieces.pieces[i].position === num)
         {
           result = i;
         }
@@ -518,51 +519,48 @@ const removeDups = (arr) => {
 
 const south = (id,chessGame) => {
   let cr = compassRose();
-  let pieces = JSON.parse(piecesJSON());
   while (cr.getNoMoreMoves === false){
-    cr.setLocation = piecePresent(pieces.pieces[id].position + (8 * (cr.getMoves + 1)))
+    cr.setLocation = piecePresent(chessGame.getPieces.pieces[id].position + (8 * (cr.getMoves + 1)))
     if (cr.getLocation != -1) {
-      if (pieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
-        cr.setResultInc = pieces.pieces[id].position + (8 * (cr.getMoves + 1));
+      if (chessGame.getPieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
+        cr.setResultInc = chessGame.getPieces.pieces[id].position + (8 * (cr.getMoves + 1));
         cr.setNoMoreMoves = true; }
-      if (cr.getMoves === 0){ cr.setResult = pieces.pieces[cr.getLocation].piece; }
+      if (cr.getMoves === 0){ cr.setResult = chessGame.getPieces.pieces[cr.getLocation].piece; }
       cr.setNoMoreMoves = true;
-    } else { cr.setResultInc = pieces.pieces[id].position + (8 * (cr.getMoves + 1)); }
-    if (pieces.pieces[id].position + (8 * (cr.getMoves + 1)) > 63) cr.setNoMoreMoves = true;
+    } else { cr.setResultInc = chessGame.getPieces.pieces[id].position + (8 * (cr.getMoves + 1)); }
+    if (chessGame.getPieces.pieces[id].position + (8 * (cr.getMoves + 1)) > 63) cr.setNoMoreMoves = true;
   }
   return cr.getResult;
 }
 
 const southEast = (id,chessGame) => {
   let cr = compassRose();
-  let pieces = JSON.parse(piecesJSON());
   while (cr.getNoMoreMoves === false){
-    cr.setLocation = piecePresent(pieces.pieces[id].position + (9 * (cr.getMoves + 1)))
+    cr.setLocation = piecePresent(chessGame.getPieces.pieces[id].position + (9 * (cr.getMoves + 1)))
     if (cr.getLocation != -1) {
-      if (pieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
-        cr.setResultInc = pieces.pieces[id].position + (9 * (cr.getMoves + 1));
+      if (chessGame.getPieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
+        cr.setResultInc = chessGame.getPieces.pieces[id].position + (9 * (cr.getMoves + 1));
         cr.setNoMoreMoves = true; }
-      if (cr.getMoves === 0){ cr.setResult = pieces.pieces[cr.getLocation].piece; }
+      if (cr.getMoves === 0){ cr.setResult = chessGame.getPieces.pieces[cr.getLocation].piece; }
       cr.setNoMoreMoves = true;
-    } else { cr.setResultInc = pieces.pieces[id].position + (9 * (cr.getMoves + 1)); }
-    if (pieces.pieces[id].position + (9 * (cr.getMoves + 1)) > 63  || getX(pieces.pieces[id].position + (9 * (cr.getMoves + 1))) === 1) cr.setNoMoreMoves = true;
+    } else { cr.setResultInc = chessGame.getPieces.pieces[id].position + (9 * (cr.getMoves + 1)); }
+    if (chessGame.getPieces.pieces[id].position + (9 * (cr.getMoves + 1)) > 63  || getX(chessGame.getPieces.pieces[id].position + (9 * (cr.getMoves + 1))) === 1) cr.setNoMoreMoves = true;
   }
   return cr.getResult;
 }
 
 const southWest = (id,chessGame) => {
   let cr = compassRose();
-  let pieces = JSON.parse(piecesJSON());
   while (cr.getNoMoreMoves === false){
-    cr.setLocation = piecePresent(pieces.pieces[id].position + (7 * (cr.getMoves + 1)))
+    cr.setLocation = piecePresent(chessGame.getPieces.pieces[id].position + (7 * (cr.getMoves + 1)))
     if (cr.getLocation != -1) {
-      if (pieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
-        cr.setResultInc = pieces.pieces[id].position + (7 * (cr.getMoves + 1));
+      if (chessGame.getPieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
+        cr.setResultInc = chessGame.getPieces.pieces[id].position + (7 * (cr.getMoves + 1));
         cr.setNoMoreMoves = true; }
-      if (cr.getMoves === 0){ cr.setResult = pieces.pieces[cr.getLocation].piece; }
+      if (cr.getMoves === 0){ cr.setResult = chessGame.getPieces.pieces[cr.getLocation].piece; }
       cr.setNoMoreMoves = true;
-    } else { cr.setResultInc = pieces.pieces[id].position + (7 * (cr.getMoves + 1)); }
-    if (pieces.pieces[id].position + (7 * (cr.getMoves + 1)) > 63  || getX(pieces.pieces[id].position + (7 * (cr.getMoves + 1))) === 8) cr.setNoMoreMoves = true;
+    } else { cr.setResultInc = chessGame.getPieces.pieces[id].position + (7 * (cr.getMoves + 1)); }
+    if (chessGame.getPieces.pieces[id].position + (7 * (cr.getMoves + 1)) > 63  || getX(chessGame.getPieces.pieces[id].position + (7 * (cr.getMoves + 1))) === 8) cr.setNoMoreMoves = true;
   }
   return cr.getResult;
 }
@@ -580,7 +578,7 @@ const stateTwo = (move, chessGame) => {
   chessGame.setGameState = 2;
   chessGame.setMovesAvailable = move.slice(1);
   chessGame.setChosenPiece = move[0];
-  instructionMessage.textContent = `Where would you like to move? \r\n Press button too select another piece. (${chessGame.getMovesAvailable})`;
+  instructionMessage.textContent = `Where would you like to move? \r\n Press button too select another piece.`;
   actionButton.textContent = 'Go Back'
   actionButton.removeEventListener("click", stateFourBound);
   actionButton.addEventListener("click", stateOneBound);
@@ -596,17 +594,16 @@ const stateFour = (player) => {
 
 const west = (id,chessGame) => {
   let cr = compassRose();
-  let pieces = JSON.parse(piecesJSON());
   while (cr.getNoMoreMoves === false){
-    cr.setLocation = piecePresent(pieces.pieces[id].position - (1 * (cr.getMoves + 1)))
+    cr.setLocation = piecePresent(chessGame.getPieces.pieces[id].position - (1 * (cr.getMoves + 1)))
     if (cr.getLocation != -1) {
-      if (pieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
-        cr.setResultInc = pieces.pieces[id].position - (1 * (cr.getMoves + 1));
+      if (chessGame.getPieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
+        cr.setResultInc = chessGame.getPieces.pieces[id].position - (1 * (cr.getMoves + 1));
         cr.setNoMoreMoves = true; }
-      if (cr.getMoves === 0){ cr.setResult = pieces.pieces[cr.getLocation].piece; }
+      if (cr.getMoves === 0){ cr.setResult = chessGame.getPieces.pieces[cr.getLocation].piece; }
       cr.setNoMoreMoves = true;
-    } else { cr.setResultInc = pieces.pieces[id].position - (1 * (cr.getMoves + 1)); }
-    if (pieces.pieces[id].position - (1 * (cr.getMoves + 1)) < 0 || getX(pieces.pieces[id].position - (1 * (cr.getMoves + 1))) === 8 ) cr.setNoMoreMoves = true;
+    } else { cr.setResultInc = chessGame.getPieces.pieces[id].position - (1 * (cr.getMoves + 1)); }
+    if (chessGame.getPieces.pieces[id].position - (1 * (cr.getMoves + 1)) < 0 || getX(chessGame.getPieces.pieces[id].position - (1 * (cr.getMoves + 1))) === 8 ) cr.setNoMoreMoves = true;
   }
   return cr.getResult;
 }
