@@ -157,6 +157,10 @@ const east = (id,chessGame) => {
     cr.setLocation = piecePresent(chessGame.getPieces.pieces[id].position + (1 * (cr.getMoves + 1)));
     if (cr.getLocation != -1) {
       if (chessGame.getPieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
+        let pieceCode = chessGame.getPieces.pieces[cr.getLocation].piece.slice(chessGame.getPieces.pieces[cr.getLocation].piece.length - 2);
+        if ((['en','ok'].includes(pieceCode) && [0,1].includes(id)) || (pieceCode === 'ng' && cr.getMoves === 0)) {
+          chessGame.setCheck = true;
+        }
         cr.setResultInc = chessGame.getPieces.pieces[id].position + (1 * (cr.getMoves + 1));
         cr.setNoMoreMoves = true; }
       if (cr.getMoves === 0){ cr.setResult = chessGame.getPieces.pieces[cr.getLocation].piece; }
@@ -173,8 +177,12 @@ const game = {
   colorPlaying: 'White',
   moveAvailable: [],
   chosenPiece: -1,
+  check: false,
+  get getCheck() {
+    return this.check;
+  },
   get getPieces() {
-      return this.pieces;
+    return this.pieces;
   },
   get getGameState() {
     return this.gameState;
@@ -186,7 +194,10 @@ const game = {
     return this.moveAvailable;
   },
   get getChosenPiece() {
-      return this.chosenPiece;
+    return this.chosenPiece;
+  },
+  set setCheck(checkBool) {
+    this.check = checkBool;
   },
   set setGameState(state) {
     this.gameState = state;
@@ -204,6 +215,49 @@ const game = {
     this.pieces.pieces[pdArr[0]].position = pdArr[1];
   }
 };
+
+const inCheck = (chessGame) => {
+  let result = false;
+  let threats = [];
+  let kingLoc = -1;
+  chessGame.setCheck = false;
+  (chessGame.getColorPlaying === 'White' ? kingLoc = 0 : kingLoc = 1);
+  console.log(kingLoc);
+  east(kingLoc,chessGame);
+  west(kingLoc,chessGame);
+  north(kingLoc,chessGame);
+  northEast(kingLoc,chessGame);
+  northWest(kingLoc,chessGame);
+  south(kingLoc,chessGame);
+  southEast(kingLoc,chessGame);
+  southWest(kingLoc,chessGame);
+  knightMoves(kingLoc,chessGame);
+  if (chessGame.getCheck === true) result = true;
+  return result;
+}
+
+const knightMoves = (id,chessGame) => {
+  let mathSet=[-17,-15,-10,-6,6,10,15,17]
+  let removeSet = []
+  removeSet = removeSet.concat(checkKnightX(chessGame.getPieces.pieces[id].position))
+  removeSet = removeSet.concat(checkKnightY(chessGame.getPieces.pieces[id].position))
+  removeSet = removeDups(removeSet);
+  mathSet = remove(mathSet, removeSet);
+  let position = -1
+  let result = [id]
+  for (let correction of mathSet){
+    position = chessGame.getPieces.pieces[id].position + correction
+    if (piecePresent(position) === -1  ) {result = result.concat(position);}
+    else {
+      if (chessGame.getPieces.pieces[piecePresent(position)].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
+        let pieceCode = chessGame.getPieces.pieces[piecePresent(position)].piece.slice(chessGame.getPieces.pieces[piecePresent(position)].piece.length - 2);
+        if (pieceCode === 'ht') chessGame.setCheck = true;
+        result = result.concat(position);
+      }
+    }
+  }
+  return result;
+}
 
 const movePiece = (id,chessGame) => {
   let capture = false;
@@ -236,9 +290,18 @@ const movePiece = (id,chessGame) => {
   if (game.getGameState === 2 && init === false) {
     if (game.getMovesAvailable.includes(parseInt(id))) {
       if (capture === true) { capturePiece.position = -1 };
+      let oldDest = chessGame.getPieces.pieces[chessGame.getChosenPiece].position;
+      alert(oldDest);
       chessGame.setDestination = [chessGame.getChosenPiece, parseInt(id)];
-      boardRefresh(chessGame);
-      stateThree(chessGame);
+      if (chessGame.getCheck && inCheck(chessGame)) {
+        instructionMessage.textContent = 'This move either put you or keeps you in check \r\n\'go back\' and Select a different piece.';
+        chessGame.setDestination = [chessGame.getChosenPiece, oldDest];
+        boardRefresh(chessGame);
+      } else {
+        boardRefresh(chessGame);
+        stateThree(chessGame);
+      }
+
     } else {
       let pieceCode = chessGame.getPieces.pieces[chessGame.getChosenPiece].piece.slice(chessGame.getPieces.pieces[chessGame.getChosenPiece].piece.length - 2);
       switch (pieceCode) {
@@ -428,21 +491,7 @@ const moves = (id,chessGame) => {
     case "White Queen Knight" :
     case "Black Queen Knight" :
     {
-      let mathSet=[-17,-15,-10,-6,6,10,15,17]
-      let removeSet = []
-      removeSet = removeSet.concat(checkKnightX(chessGame.getPieces.pieces[id].position))
-      removeSet = removeSet.concat(checkKnightY(chessGame.getPieces.pieces[id].position))
-      removeSet = removeDups(removeSet);
-      mathSet = remove(mathSet, removeSet);
-      let position = -1
-      result = [id]
-      for (let correction of mathSet){
-        position = chessGame.getPieces.pieces[id].position + correction
-        if (piecePresent(position) === -1  ) {result = result.concat(position);}
-        else {
-          if (chessGame.getPieces.pieces[piecePresent(position)].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) { result = result.concat(position); }
-        }
-      }
+      result = knightMoves(id, chessGame);
     }
     break;
   }
@@ -455,6 +504,10 @@ const north = (id,chessGame,isPawn = false) => {
     cr.setLocation = piecePresent(chessGame.getPieces.pieces[id].position - (8 * (cr.getMoves + 1)))
     if (cr.getLocation != -1) {
       if (chessGame.getPieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0) && isPawn === false) {
+        let pieceCode = chessGame.getPieces.pieces[cr.getLocation].piece.slice(chessGame.getPieces.pieces[cr.getLocation].piece.length - 2);
+        if ((['en','ok'].includes(pieceCode) && [0,1].includes(id)) || (pieceCode === 'ng' && cr.getMoves === 0)) {
+          chessGame.setCheck = true;
+        }
         cr.setResultInc = chessGame.getPieces.pieces[id].position - (8 * (cr.getMoves + 1));
         cr.setNoMoreMoves = true; }
       if (cr.getMoves === 0){ cr.setResult = chessGame.getPieces.pieces[cr.getLocation].piece; }
@@ -471,6 +524,10 @@ const northEast = (id,chessGame,isPawn = false) => {
     cr.setLocation = piecePresent(chessGame.getPieces.pieces[id].position - (7 * (cr.getMoves + 1)))
     if ((cr.getLocation != -1 && isPawn === false) || (cr.getLocation != -1 && isPawn === true && cr.getMoves === 0)) {
       if (chessGame.getPieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
+        let pieceCode = chessGame.getPieces.pieces[cr.getLocation].piece.slice(chessGame.getPieces.pieces[cr.getLocation].piece.length - 2);
+        if ((['en','op'].includes(pieceCode) && [0,1].includes(id)) || (['wn','ng'].includes(pieceCode) && cr.getMoves === 0)) {
+          chessGame.setCheck = true;
+        }
         cr.setResultInc = chessGame.getPieces.pieces[id].position - (7 * (cr.getMoves + 1));
         cr.setNoMoreMoves = true; }
       if (cr.getMoves === 0){ cr.setResult = chessGame.getPieces.pieces[cr.getLocation].piece; }
@@ -488,6 +545,10 @@ const northWest = (id,chessGame,isPawn = false) => {
     cr.setLocation = piecePresent(chessGame.getPieces.pieces[id].position - (9 * (cr.getMoves + 1)))
     if ((cr.getLocation != -1 && isPawn === false) || (cr.getLocation != -1 && isPawn === true && cr.getMoves === 0)) {
       if (chessGame.getPieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
+        let pieceCode = chessGame.getPieces.pieces[cr.getLocation].piece.slice(chessGame.getPieces.pieces[cr.getLocation].piece.length - 2);
+        if ((['en','op'].includes(pieceCode) && [0,1].includes(id)) || (['wn','ng'].includes(pieceCode) && cr.getMoves === 0)) {
+          chessGame.setCheck = true;
+        }
         cr.setResultInc = chessGame.getPieces.pieces[id].position - (9 * (cr.getMoves + 1));
         cr.setNoMoreMoves = true; }
       if (cr.getMoves === 0){ cr.setResult = chessGame.getPieces.pieces[cr.getLocation].piece; }
@@ -530,6 +591,10 @@ const south = (id,chessGame) => {
     cr.setLocation = piecePresent(chessGame.getPieces.pieces[id].position + (8 * (cr.getMoves + 1)))
     if (cr.getLocation != -1) {
       if (chessGame.getPieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
+        let pieceCode = chessGame.getPieces.pieces[cr.getLocation].piece.slice(chessGame.getPieces.pieces[cr.getLocation].piece.length - 2);
+        if ((['en','ok'].includes(pieceCode) && [0,1].includes(id)) || (pieceCode === 'ng' && cr.getMoves === 0)) {
+          chessGame.setCheck = true;
+        }
         cr.setResultInc = chessGame.getPieces.pieces[id].position + (8 * (cr.getMoves + 1));
         cr.setNoMoreMoves = true; }
       if (cr.getMoves === 0){ cr.setResult = chessGame.getPieces.pieces[cr.getLocation].piece; }
@@ -546,6 +611,10 @@ const southEast = (id,chessGame) => {
     cr.setLocation = piecePresent(chessGame.getPieces.pieces[id].position + (9 * (cr.getMoves + 1)))
     if (cr.getLocation != -1) {
       if (chessGame.getPieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
+        let pieceCode = chessGame.getPieces.pieces[cr.getLocation].piece.slice(chessGame.getPieces.pieces[cr.getLocation].piece.length - 2);
+        if ((['en','op'].includes(pieceCode) && [0,1].includes(id)) || (pieceCode === 'ng' && cr.getMoves === 0)) {
+          chessGame.setCheck = true;
+        }
         cr.setResultInc = chessGame.getPieces.pieces[id].position + (9 * (cr.getMoves + 1));
         cr.setNoMoreMoves = true; }
       if (cr.getMoves === 0){ cr.setResult = chessGame.getPieces.pieces[cr.getLocation].piece; }
@@ -562,6 +631,10 @@ const southWest = (id,chessGame) => {
     cr.setLocation = piecePresent(chessGame.getPieces.pieces[id].position + (7 * (cr.getMoves + 1)))
     if (cr.getLocation != -1) {
       if (chessGame.getPieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
+        let pieceCode = chessGame.getPieces.pieces[cr.getLocation].piece.slice(chessGame.getPieces.pieces[cr.getLocation].piece.length - 2);
+        if ((['en','op'].includes(pieceCode) && [0,1].includes(id)) || (pieceCode === 'ng' && cr.getMoves === 0)) {
+          chessGame.setCheck = true;
+        }
         cr.setResultInc = chessGame.getPieces.pieces[id].position + (7 * (cr.getMoves + 1));
         cr.setNoMoreMoves = true; }
       if (cr.getMoves === 0){ cr.setResult = chessGame.getPieces.pieces[cr.getLocation].piece; }
@@ -575,7 +648,14 @@ const southWest = (id,chessGame) => {
 const stateOne = (chessGame) => {
   chessGame.setGameState = 1;
   boardRefresh(chessGame);
-  document.getElementById('instructionMessage').textContent = 'What piece would you like to move?  Press button to end game'
+  let instructionMessage = '';
+  if (inCheck(chessGame)) {
+    chessGame.setCheck = true;
+    instructionMessage = 'You are in check!!!\r\n'
+  }
+  instructionMessage += 'What piece would you like to move?  Press button to end game';
+  document.getElementById('instructionMessage').setAttribute('style', 'white-space: pre;');
+  document.getElementById('instructionMessage').textContent = instructionMessage
   actionButton.textContent = 'Concede Game'
   actionButton.removeEventListener("click", stateOneBound);
   actionButton.removeEventListener("click", changePlayersBound);
@@ -603,8 +683,7 @@ const stateThree = (chessGame) => {
 
 const stateFour = (player) => {
   chessGame.setGameState = 4;
-  document.getElementById('instructionMessage').setAttribute('style', 'white-space: pre;');
-  document.getElementById('instructionMessage').textContent = `${player} player lost by conceding. \r\n It is wise to know your limitations, and folly not to push the envelope.\r\n Reload to play again.`;
+  instructionMessage.textContent = `${player} player lost by conceding. \r\n It is wise to know your limitations, and folly not to push the envelope.\r\n Reload to play again.`;
   actionButton.style.visibility = "hidden";
 };
 
@@ -614,6 +693,10 @@ const west = (id,chessGame) => {
     cr.setLocation = piecePresent(chessGame.getPieces.pieces[id].position - (1 * (cr.getMoves + 1)))
     if (cr.getLocation != -1) {
       if (chessGame.getPieces.pieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
+        let pieceCode = chessGame.getPieces.pieces[cr.getLocation].piece.slice(chessGame.getPieces.pieces[cr.getLocation].piece.length - 2);
+        if ((['en','ok'].includes(pieceCode) && [0,1].includes(id)) || (pieceCode === 'ng' && cr.getMoves === 0)) {
+          chessGame.setCheck = true;
+        }
         cr.setResultInc = chessGame.getPieces.pieces[id].position - (1 * (cr.getMoves + 1));
         cr.setNoMoreMoves = true; }
       if (cr.getMoves === 0){ cr.setResult = chessGame.getPieces.pieces[cr.getLocation].piece; }
