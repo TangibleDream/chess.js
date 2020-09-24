@@ -178,6 +178,22 @@ const game = {
   moveAvailable: [],
   chosenPiece: -1,
   check: false,
+  shortCastleWhite: true,
+  longCastleWhite: true,
+  shortCastleBlack: true,
+  longCastleBlack: true,
+  get getShortCastleWhite() {
+    return this.shortCastleWhite;
+  },
+  get getLongCastleWhite() {
+    return this.longCastleWhite;
+  },
+  get getShortCastleBlack() {
+    return this.shortCastleBlack;
+  },
+  get getLongCastleBlack() {
+    return this.longCastleBlack;
+  },
   get getCheck() {
     return this.check;
   },
@@ -195,6 +211,18 @@ const game = {
   },
   get getChosenPiece() {
     return this.chosenPiece;
+  },
+  set setShortCastleWhite(castleBool) {
+    this.shortCastleWhite = castleBool;
+  },
+  set setLongCastleWhite(castleBool) {
+    this.longCastleWhite = castleBool;
+  },
+  set setShortCastleBlack(castleBool) {
+    this.shortCastleBlack = castleBool;
+  },
+  set setLongCastleBlack(castleBool) {
+    this.longCastleBlack = castleBool;
   },
   set setCheck(checkBool) {
     this.check = checkBool;
@@ -288,21 +316,47 @@ const movePiece = (id,chessGame) => {
     }
   }
   if (game.getGameState === 2 && init === false) {
-    if (game.getMovesAvailable.includes(parseInt(id))) {
-      if (capture === true) { capturePiece.position = -1 };
+    if (game.getMovesAvailable.includes(parseInt(id))) {     //V A L I D   S Q U A R E   L O G I C
       let oldDest = chessGame.getPieces.pieces[chessGame.getChosenPiece].position;
-      alert(oldDest);
       chessGame.setDestination = [chessGame.getChosenPiece, parseInt(id)];
-      if (chessGame.getCheck && inCheck(chessGame)) {
-        instructionMessage.textContent = 'This move either put you or keeps you in check \r\n\'go back\' and Select a different piece.';
+      if (chessGame.getCheck && inCheck(chessGame)) {        //C H E C K   L O G I C   B E G I N S
+        instructionMessage.textContent = 'This move doesn\'t get you out of check \r\n\'go back\' and Select a different piece.';
         chessGame.setDestination = [chessGame.getChosenPiece, oldDest];
         boardRefresh(chessGame);
       } else {
+        if (inCheck(chessGame)){
+          instructionMessage.textContent = 'This move will put you in check \r\n\'go back\' and Select a different piece.';
+          chessGame.setDestination = [chessGame.getChosenPiece, oldDest];
+          boardRefresh(chessGame);
+        } else {                                            //C H E C K   L O G I C   E N D S
+        //castle go logic
+          let pieceCode = chessGame.getPieces.pieces[chessGame.getChosenPiece].piece;
+          if((pieceCode === 'White King Rook' && parseInt(id) === 61 && chessGame.getShortCastleWhite === true) || (pieceCode === 'Black King Rook' && parseInt(id) === 58 && chessGame.getShortCastleBlack === true) ){
+            let castleGo = window.confirm("Would you like to castle?");
+            if (castleGo) {
+              let kingLoc = (chessGame.getColorPlaying === 'White' ? 0 : 1);
+              chessGame.setDestination = (chessGame.getColorPlaying === 'White' ? [0,62] : [1,57]);
+              if (kingLoc === 0){
+                chessGame.setShortCastleWhite = false;
+                chessGame.setLongCastleWhite = false;
+              } else {
+                chessGame.setShortCastleBlack = false;
+                chessGame.setLongCastleBlack = false;
+              }
+            }
+          }else{
+            switch(chessGame.getPieces.pieces[chessGame.getChosenPiece].piece){
+              case 'White King Rook': chessGame.setShortCastleWhite = false; break;
+              case 'Black King Rook': chessGame.setShortCastleBlack = false; break;
+              case 'White King': chessGame.setShortCastleWhite = false; break;
+              case 'Black King': chessGame.setShortCastleBlack = false; break;
+            }
+          }
+        if (capture === true) { capturePiece.position = -1 };
         boardRefresh(chessGame);
         stateThree(chessGame);
-      }
-
-    } else {
+      }}
+    } else {   //I N V A L I D   S Q U A R E   L O G I C
       let pieceCode = chessGame.getPieces.pieces[chessGame.getChosenPiece].piece.slice(chessGame.getPieces.pieces[chessGame.getChosenPiece].piece.length - 2);
       switch (pieceCode) {
         case 'wn':
