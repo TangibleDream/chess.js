@@ -107,7 +107,6 @@ const compassRose = () => {
 const changePlayers = (chessGame) => {
   (chessGame.getColorPlaying === 'White' ? chessGame.setColorPlaying = 'Black' : chessGame.setColorPlaying = 'White');
   for(let i = 0; i < 32; i ++) {
-    //alert(`${chessGame.getPieces.pieces[i].piece}`)
     if (chessGame.getPieces.pieces[i].position != -1) chessGame.setDestination = [i, flipValue(chessGame.getPieces.pieces[i].position)];
   }
   stateOne(chessGame);
@@ -250,7 +249,6 @@ const inCheck = (chessGame) => {
   let kingLoc = -1;
   chessGame.setCheck = false;
   (chessGame.getColorPlaying === 'White' ? kingLoc = 0 : kingLoc = 1);
-  console.log(kingLoc);
   east(kingLoc,chessGame);
   west(kingLoc,chessGame);
   north(kingLoc,chessGame);
@@ -348,9 +346,28 @@ const movePiece = (id,chessGame) => {
             switch(chessGame.getPieces.pieces[chessGame.getChosenPiece].piece){
               case 'White King Rook': chessGame.setShortCastleWhite = false; break;
               case 'Black King Rook': chessGame.setShortCastleBlack = false; break;
-              case 'White King': chessGame.setShortCastleWhite = false; break;
-              case 'Black King': chessGame.setShortCastleBlack = false; break;
+              case 'White King': chessGame.setShortCastleWhite = false; chessGame.setLongCastleWhite = false; break;
+              case 'Black King': chessGame.setShortCastleBlack = false; chessGame.setLongCastleBlack = false; break;
             }
+          }
+          if((pieceCode === 'White Queen Rook' && parseInt(id) === 59 && chessGame.getLongCastleWhite === true) || (pieceCode === 'Black Queen Rook' && parseInt(id) === 60 && chessGame.getLongCastleBlack === true) ){
+            let castleGo = window.confirm("Would you like to castle?");
+            if (castleGo) {
+              let kingLoc = (chessGame.getColorPlaying === 'White' ? 0 : 1);
+              chessGame.setDestination = (chessGame.getColorPlaying === 'White' ? [0,58] : [1,61]);
+              if (kingLoc === 0){
+                chessGame.setShortCastleWhite = false;
+                chessGame.setLongCastleWhite = false;
+              } else {
+                chessGame.setShortCastleBlack = false;
+                chessGame.setLongCastleBlack = false;
+              }
+            }
+          }else{
+            switch(chessGame.getPieces.pieces[chessGame.getChosenPiece].piece){
+              case 'White Queen Rook': chessGame.setLongCastleWhite = false; break;
+              case 'Black Queen Rook': chessGame.setLongCastleBlack = false; break;
+          }
           }
         if (capture === true) { capturePiece.position = -1 };
         boardRefresh(chessGame);
