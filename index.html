@@ -7,7 +7,15 @@
     <center>
         <div id="chessBoard" style="width: 420px; box-sizing: border-box; border: 10px solid #B97A57"></div>
         <p id="instructionMessage">You have no instructions.</p>
-        <button type="button" id="actionButton" style="visibility: visible">Start</button>
+        <p id="promotionMessage" style="visibility: hidden">What piece would you like in exchange for your Pawn?</p>
+        <button type="button" id="actionButton" style="visibility: visible">Start</button><br/>
+        <select id="promotionOption" style="visibility: hidden">
+            <option value="Choose">Choose</option>
+            <option value="Queen">Queen</option>
+            <option value="Queen Bishop">Bishop</option>
+            <option value="Queen Knight">Knight</option>
+            <option value="Queen Rook">Rook</option>
+        </select>
     </center>
 </div>
 <script src="./util.js" type="module"></script>
