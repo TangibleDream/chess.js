@@ -240,6 +240,9 @@ const game = {
   },
   set setDestination(pdArr) {
     this.pieces.pieces[pdArr[0]].position = pdArr[1];
+  },
+  set setPiece(pArr) {
+    this.pieces.pieces[pArr[0]].piece = pArr[1];
   }
 };
 
@@ -367,11 +370,18 @@ const movePiece = (id,chessGame) => {
             switch(chessGame.getPieces.pieces[chessGame.getChosenPiece].piece){
               case 'White Queen Rook': chessGame.setLongCastleWhite = false; break;
               case 'Black Queen Rook': chessGame.setLongCastleBlack = false; break;
+            }
           }
-          }
+          // P A W N   P R O M O T I O N
+        pieceCode = chessGame.getPieces.pieces[chessGame.getChosenPiece].piece.slice(chessGame.getPieces.pieces[chessGame.getChosenPiece].piece.length - 2);
+        if ([0,1,2,3,4,5,6,7].includes(parseInt(id)) && pieceCode == 'wn'){
+          promotionMessage.style.visibility = "visible";
+          promotionForm.style.visibility = "visible";
+          actionButton.style.visibility = "hidden";
+        }
         if (capture === true) { capturePiece.position = -1 };
-        boardRefresh(chessGame);
-        stateThree(chessGame);
+          boardRefresh(chessGame);
+          stateThree(chessGame);
       }}
     } else {   //I N V A L I D   S Q U A R E   L O G I C
       let pieceCode = chessGame.getPieces.pieces[chessGame.getChosenPiece].piece.slice(chessGame.getPieces.pieces[chessGame.getChosenPiece].piece.length - 2);
@@ -642,6 +652,13 @@ const piecePresent = (num) => {
     return result
 };
 
+const pawnPromotion = (chessGame, promotionChoice) => {
+  chessGame.setPiece = [chessGame.getChosenPiece, `${chessGame.getColorPlaying} ${promotionChoice.options[promotionForm.selectedIndex].value}`];
+  promotionForm.style.visibility = "hidden";
+  promotionMessage.style.visibility = "hidden";
+  actionButton.style.visibility = "visible";
+}
+
 const remove = (setArr, toDelArr) => {
   let index = -1;
   for (let dels of toDelArr) {
@@ -782,6 +799,9 @@ let chessGame = game;
 boardRefresh(chessGame);
 const actionButton = document.getElementById('actionButton');
 const instructionMessage = document.getElementById('instructionMessage');
+const promotionForm = document.getElementById('promotionOption');
+const promotionBound = pawnPromotion.bind(null, chessGame, promotionForm);
+promotionForm.addEventListener("change", promotionBound);
 instructionMessage.textContent = 'Press start to play.';
 const stateOneBound = stateOne.bind(null, chessGame);
 const stateFourBound = stateFour.bind(null, chessGame.getColorPlaying);
