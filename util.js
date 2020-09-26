@@ -319,15 +319,26 @@ const movePiece = (id,chessGame) => {
   if (game.getGameState === 2 && init === false) {
     if (game.getMovesAvailable.includes(parseInt(id))) {     //V A L I D   S Q U A R E   L O G I C
       let oldDest = chessGame.getPieces.pieces[chessGame.getChosenPiece].position;
+      let oldCapture = -1
+      if (capture === true) {
+        oldCapture = capturePiece.position;
+        capturePiece.position = -1
+      };
       chessGame.setDestination = [chessGame.getChosenPiece, parseInt(id)];
       if (chessGame.getCheck && inCheck(chessGame)) {        //C H E C K   L O G I C   B E G I N S
         instructionMessage.textContent = 'This move doesn\'t get you out of check \r\n\'go back\' and Select a different piece.';
         chessGame.setDestination = [chessGame.getChosenPiece, oldDest];
+        if (capture === true) {
+          capturePiece.position = oldCapture;
+        };
         boardRefresh(chessGame);
       } else {
         if (inCheck(chessGame)){
           instructionMessage.textContent = 'This move will put you in check \r\n\'go back\' and Select a different piece.';
           chessGame.setDestination = [chessGame.getChosenPiece, oldDest];
+          if (capture === true) {
+            capturePiece.position = oldCapture;
+          };
           boardRefresh(chessGame);
         } else {                                            //C H E C K   L O G I C   E N D S
         //castle go logic
@@ -379,9 +390,8 @@ const movePiece = (id,chessGame) => {
           promotionForm.style.visibility = "visible";
           actionButton.style.visibility = "hidden";
         }
-        if (capture === true) { capturePiece.position = -1 };
-          boardRefresh(chessGame);
-          stateThree(chessGame);
+        boardRefresh(chessGame);
+        stateThree(chessGame);
       }}
     } else {   //I N V A L I D   S Q U A R E   L O G I C
       let pieceCode = chessGame.getPieces.pieces[chessGame.getChosenPiece].piece.slice(chessGame.getPieces.pieces[chessGame.getChosenPiece].piece.length - 2);
