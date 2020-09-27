@@ -1,5 +1,4 @@
-{
-  "pieces":[
+export default [
     {
       "piece":"White King",
       "position":60
@@ -129,4 +128,3 @@
       "position":15
     }
   ]
-}
