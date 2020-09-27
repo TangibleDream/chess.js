@@ -15,7 +15,7 @@ const boardRefresh = (chessGame) => {
     for (let i = 0; i < 64; i ++){
         addAnchor = false;
         squares[i] = document.createElement("img");
-        pieceNum = await piecePresent(i);
+        pieceNum = piecePresent(i);
         if (pieceNum > -1){
           addAnchor = true;
           switch (chessGame.getPieces[pieceNum].piece){
