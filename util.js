@@ -2,7 +2,7 @@
 import { squareColor, getY, getX, flipValue } from './helpers.js';
 import pieces from './pieces.js'
 
-const boardRefresh = async (chessGame) => {
+const boardRefresh = (chessGame) => {
     let squares = [];
     let anchorElement = [];
     let addAnchor = false;
