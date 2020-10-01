@@ -655,9 +655,9 @@ const stateThree = (chessGame) => {
   actionButton.addEventListener("click", changePlayersBound);
 };
 
-const stateFour = (player) => {
+const stateFour = (chessGame) => {
   chessGame.setGameState = 4;
-  instructionMessage.textContent = `${player} player lost by conceding. \r\n It is wise to know your limitations, and folly not to push the envelope.\r\n Reload to play again.`;
+  instructionMessage.textContent = `${chessGame.getColorPlaying} player lost by conceding. \r\n It is wise to know your limitations, and folly not to push the envelope.\r\n Reload to play again.`;
   actionButton.style.visibility = "hidden";
 };
 
@@ -670,6 +670,6 @@ const promotionBound = pawnPromotion.bind(null, chessGame, promotionForm);
 promotionForm.addEventListener("change", promotionBound);
 instructionMessage.textContent = 'Press start to play.';
 const stateOneBound = stateOne.bind(null, chessGame);
-const stateFourBound = stateFour.bind(null, chessGame.getColorPlaying);
+const stateFourBound = stateFour.bind(null, chessGame);
 const changePlayersBound = changePlayers.bind(null, chessGame);
 actionButton.addEventListener("click", stateOneBound);
