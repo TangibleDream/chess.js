@@ -1,6 +1,7 @@
 'use strict';
-import { squareColor, getY, getX, flipValue } from './helpers.js';
+import { flipValue, getY, getX, isOpponent, isThreat, offset, pieceCode, squareColor } from './helpers.js';
 import pieces from './pieces.js'
+import { adjTht, bound, disTht, osNum, posNeg } from'./directions.js'
 
 const boardRefresh = (chessGame) => {
     let squares = [];
@@ -151,25 +152,36 @@ const checkKnightY = (loc) => {
   return result;
 };
 
-const east = (id,chessGame) => {
+const directional = (direction, id, chessGame, isPawn = false) => {
+  let dmap = {'east' : ['pos',1,['en','ok'],['ng'],1], 'west' : ['neg',1,['en','ok'],['ng'],8], 'south' : ['pos',8,['en','ok'],['ng'],8]
+  , 'southeast' : ['pos',9,['en','op'],['ng'],1] , 'southwest' : ['pos',7,['en','op'],['ng'],8], 'north' : ['neg',8,['en','ok'],['ng'],8],
+  'northeast' : ['neg',7,['en','op'],['wn','ng'],1], 'northwest' : ['neg',9,['en','op'],['wn','ng'],8]}
   let cr = compassRose();
   while (cr.getNoMoreMoves === false){
-    cr.setLocation = piecePresent(chessGame.getPieces[id].position + (1 * (cr.getMoves + 1)));
+    cr.setLocation = piecePresent(chessGame.getPieces[id].position + offset(osNum(direction),cr.getMoves,posNeg(direction)));
     if (cr.getLocation != -1) {
-      if (chessGame.getPieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
-        let pieceCode = chessGame.getPieces[cr.getLocation].piece.slice(chessGame.getPieces[cr.getLocation].piece.length - 2);
-        if ((['en','ok'].includes(pieceCode) && [0,1].includes(id)) || (pieceCode === 'ng' && cr.getMoves === 0)) {
-          chessGame.setCheck = true;
+      if (isOpponent(chessGame,cr.getLocation)) {
+        if (isThreat(dmap[direction][2], dmap[direction][3], pieceCode(chessGame,cr.getLocation), id, cr.getMoves)) chessGame.setCheck = true;
+        if (isPawn === false || (isPawn && ['northeast','northwest'].includes(direction))){
+          cr.setResultInc = chessGame.getPieces[id].position + offset(dmap[direction][1],cr.getMoves,dmap[direction][0]);
+          cr.setNoMoreMoves = true;
         }
-        cr.setResultInc = chessGame.getPieces[id].position + (1 * (cr.getMoves + 1));
-        cr.setNoMoreMoves = true; }
+      }
       if (cr.getMoves === 0){ cr.setResult = chessGame.getPieces[cr.getLocation].piece; }
       cr.setNoMoreMoves = true;
-    } else { cr.setResultInc = chessGame.getPieces[id].position + (1 * (cr.getMoves + 1)); }
-    if (chessGame.getPieces[id].position + (1 * (cr.getMoves + 1)) > 63 || getX(chessGame.getPieces[id].position + (1 * (cr.getMoves + 1))) === 1 ) cr.setNoMoreMoves = true;
+    } else { cr.setResultInc = chessGame.getPieces[id].position + offset(dmap[direction][1],cr.getMoves,dmap[direction][0]); }
+    if (['east', 'south', 'southeast', 'southwest'].includes(direction)) {
+      if (chessGame.getPieces[id].position + offset(dmap[direction][1],cr.getMoves,dmap[direction][0]) > 63) cr.setNoMoreMoves = true;
+    }
+    if (['west', 'north', 'northeast', 'northwest'].includes(direction)) {
+      if (chessGame.getPieces[id].position + offset(dmap[direction][1],cr.getMoves,dmap[direction][0])  < 0) cr.setNoMoreMoves = true;
+    }
+    if (['east', 'west', 'southeast', 'southwest', 'northeast', 'northwest'].includes(direction)) {
+      if (getX(chessGame.getPieces[id].position + offset(dmap[direction][1],cr.getMoves,dmap[direction][0])) === dmap[direction][4] ) cr.setNoMoreMoves = true;
+    }
   }
   return cr.getResult;
-};
+}
 
 const game = {
   pieces,
@@ -253,16 +265,17 @@ const inCheck = (chessGame) => {
   let kingLoc = -1;
   chessGame.setCheck = false;
   (chessGame.getColorPlaying === 'White' ? kingLoc = 0 : kingLoc = 1);
-  east(kingLoc,chessGame);
-  west(kingLoc,chessGame);
-  north(kingLoc,chessGame);
-  northEast(kingLoc,chessGame);
-  northWest(kingLoc,chessGame);
-  south(kingLoc,chessGame);
-  southEast(kingLoc,chessGame);
-  southWest(kingLoc,chessGame);
+  let KPos = chessGame.getPieces[kingLoc].position;
+  if (getX(KPos) != 8) { directional('east',kingLoc,chessGame); }
+  if (getX(KPos) != 1) { directional('west',kingLoc,chessGame); }
+  if (getY(KPos) != 8) { directional('south',kingLoc,chessGame); }
+  if (getY(KPos) != 1) { directional('north',kingLoc,chessGame); }
+  if (getX(KPos) != 8 && getY(KPos) != 8) { directional('southeast',kingLoc,chessGame); }
+  if (getX(KPos) != 1 && getY(KPos) != 1) { directional('northwest',kingLoc,chessGame); }
+  if (getX(KPos) != 1 && getY(KPos) != 8) { directional('southwest',kingLoc,chessGame); }
+  if (getX(KPos) != 8 && getY(KPos) != 1) { directional('northeast',kingLoc,chessGame); }
   knightMoves(kingLoc,chessGame);
-  if (chessGame.getCheck === true) result = true;
+  if (chessGame.getCheck) result = true;
   return result;
 }
 
@@ -280,8 +293,7 @@ const knightMoves = (id,chessGame) => {
     if (piecePresent(position) === -1  ) {result = result.concat(position);}
     else {
       if (chessGame.getPieces[piecePresent(position)].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
-        let pieceCode = chessGame.getPieces[piecePresent(position)].piece.slice(chessGame.getPieces[piecePresent(position)].piece.length - 2);
-        if (pieceCode === 'ht') chessGame.setCheck = true;
+        if (pieceCode(chessGame,piecePresent(position)) === 'ht') chessGame.setCheck = true;
         result = result.concat(position);
       }
     }
@@ -343,8 +355,7 @@ const movePiece = (id,chessGame) => {
           boardRefresh(chessGame);
         } else {                                            //C H E C K   L O G I C   E N D S
         //castle go logic
-          let pieceCode = chessGame.getPieces[chessGame.getChosenPiece].piece;
-          if((pieceCode === 'White King Rook' && parseInt(id) === 61 && chessGame.getShortCastleWhite === true) || (pieceCode === 'Black King Rook' && parseInt(id) === 58 && chessGame.getShortCastleBlack === true) ){
+          if((pieceCode(chessGame,chessGame.getChosenPiece, true) === 'White King Rook' && parseInt(id) === 61 && chessGame.getShortCastleWhite === true) || (pieceCode(chessGame,chessGame.getChosenPiece, true) === 'Black King Rook' && parseInt(id) === 58 && chessGame.getShortCastleBlack === true) ){
             let castleGo = window.confirm("Would you like to castle?");
             if (castleGo) {
               let kingLoc = (chessGame.getColorPlaying === 'White' ? 0 : 1);
@@ -365,7 +376,7 @@ const movePiece = (id,chessGame) => {
               case 'Black King': chessGame.setShortCastleBlack = false; chessGame.setLongCastleBlack = false; break;
             }
           }
-          if((pieceCode === 'White Queen Rook' && parseInt(id) === 59 && chessGame.getLongCastleWhite === true) || (pieceCode === 'Black Queen Rook' && parseInt(id) === 60 && chessGame.getLongCastleBlack === true) ){
+          if((pieceCode(chessGame,chessGame.getChosenPiece, true) === 'White Queen Rook' && parseInt(id) === 59 && chessGame.getLongCastleWhite === true) || (pieceCode(chessGame,chessGame.getChosenPiece, true) === 'Black Queen Rook' && parseInt(id) === 60 && chessGame.getLongCastleBlack === true) ){
             let castleGo = window.confirm("Would you like to castle?");
             if (castleGo) {
               let kingLoc = (chessGame.getColorPlaying === 'White' ? 0 : 1);
@@ -385,8 +396,7 @@ const movePiece = (id,chessGame) => {
             }
           }
           // P A W N   P R O M O T I O N
-        pieceCode = chessGame.getPieces[chessGame.getChosenPiece].piece.slice(chessGame.getPieces[chessGame.getChosenPiece].piece.length - 2);
-        if ([0,1,2,3,4,5,6,7].includes(parseInt(id)) && pieceCode == 'wn'){
+        if ([0,1,2,3,4,5,6,7].includes(parseInt(id)) && pieceCode(chessGame,chessGame.getChosenPiece) == 'wn'){
           promotionMessage.style.visibility = "visible";
           promotionForm.style.visibility = "visible";
           actionButton.style.visibility = "hidden";
@@ -395,8 +405,7 @@ const movePiece = (id,chessGame) => {
         stateThree(chessGame);
       }}
     } else {   //I N V A L I D   S Q U A R E   L O G I C
-      let pieceCode = chessGame.getPieces[chessGame.getChosenPiece].piece.slice(chessGame.getPieces[chessGame.getChosenPiece].piece.length - 2);
-      switch (pieceCode) {
+      switch (pieceCode(chessGame,chessGame.getChosenPiece)) {
         case 'wn':
           let pm = '1 space';
           ([48,49,50,51,52,53,54,55].includes(chessGame.getPieces[chessGame.getChosenPiece].position) ? pm = '2 spaces' : pm = '1 space');
@@ -435,16 +444,13 @@ const moves = (id,chessGame) => {
   let nem = [];
   let sem = [];
   let swm = [];
-  switch (chessGame.getPieces[id].piece) {
-    case "White King Rook" :
-    case "Black King Rook" :
-    case "White Queen Rook" :
-    case "Black Queen Rook" :
+  switch (pieceCode(chessGame,id)) {
+    case "ok" :
     {
-      if (getY(chessGame.getPieces[id].position) > 1) { nm = north(id,chessGame)};
-      if (getY(chessGame.getPieces[id].position) < 8) { sm = south(id,chessGame)};
-      if (getX(chessGame.getPieces[id].position) < 8) { em = east(id,chessGame)};
-      if (getX(chessGame.getPieces[id].position) > 1) { wm = west(id,chessGame)};
+      if (getY(chessGame.getPieces[id].position) > 1) { nm = directional('north',id,chessGame)};
+      if (getY(chessGame.getPieces[id].position) < 8) { sm = directional('south',id,chessGame)};
+      if (getX(chessGame.getPieces[id].position) < 8) { em = directional('east',id,chessGame)};
+      if (getX(chessGame.getPieces[id].position) > 1) { wm = directional('west',id,chessGame)};
       let blocked = true;
       if (Number.isInteger(nm[0]) || Number.isInteger(sm[0]) || Number.isInteger(em[0]) || Number.isInteger(wm[0])) blocked = false;
       if (blocked === false){
@@ -461,15 +467,12 @@ const moves = (id,chessGame) => {
       }
     }
     break;
-    case "White King Bishop" :
-    case "Black King Bishop" :
-    case "White Queen Bishop" :
-    case "Black Queen Bishop" :
+    case "op" :
     {
-      if (getY(chessGame.getPieces[id].position) > 1 && getX(chessGame.getPieces[id].position) > 1) { nwm = northWest(id,chessGame)};
-      if (getY(chessGame.getPieces[id].position) > 1 && getX(chessGame.getPieces[id].position) < 8) { nem = northEast(id,chessGame)};
-      if (getY(chessGame.getPieces[id].position) < 8 && getX(chessGame.getPieces[id].position) < 8) { sem = southEast(id,chessGame)};
-      if (getY(chessGame.getPieces[id].position) < 8 && getX(chessGame.getPieces[id].position) > 1) { swm = southWest(id,chessGame)};
+      if (getY(chessGame.getPieces[id].position) > 1 && getX(chessGame.getPieces[id].position) > 1) { nwm = directional('northwest',id,chessGame)};
+      if (getY(chessGame.getPieces[id].position) > 1 && getX(chessGame.getPieces[id].position) < 8) { nem = directional('northeast',id,chessGame)};
+      if (getY(chessGame.getPieces[id].position) < 8 && getX(chessGame.getPieces[id].position) < 8) { sem = directional('southeast',id,chessGame)};
+      if (getY(chessGame.getPieces[id].position) < 8 && getX(chessGame.getPieces[id].position) > 1) { swm = directional('southwest',id,chessGame)};
         let blocked = true;
         if (Number.isInteger(nwm[0]) || Number.isInteger(nem[0]) || Number.isInteger(sem[0]) || Number.isInteger(swm[0])) blocked = false;
         if (blocked === false){
@@ -486,17 +489,16 @@ const moves = (id,chessGame) => {
         }
     }
     break;
-    case "White Queen" :
-    case "Black Queen" :
+    case "en" :
     {
-      if (getY(chessGame.getPieces[id].position) > 1) { nm = north(id,chessGame)};
-      if (getY(chessGame.getPieces[id].position) < 8) { sm = south(id,chessGame)};
-      if (getX(chessGame.getPieces[id].position) < 8) { em = east(id,chessGame)};
-      if (getX(chessGame.getPieces[id].position) > 1) { wm = west(id,chessGame)};
-      if (getY(chessGame.getPieces[id].position) > 1 && getX(chessGame.getPieces[id].position) > 1) { nwm = northWest(id,chessGame)};
-      if (getY(chessGame.getPieces[id].position) > 1 && getX(chessGame.getPieces[id].position) < 8) { nem = northEast(id,chessGame)};
-      if (getY(chessGame.getPieces[id].position) < 8 && getX(chessGame.getPieces[id].position) < 8) { sem = southEast(id,chessGame)};
-      if (getY(chessGame.getPieces[id].position) < 8 && getX(chessGame.getPieces[id].position) > 1) { swm = southWest(id,chessGame)};
+      if (getY(chessGame.getPieces[id].position) > 1) { nm = directional('north',id,chessGame)};
+      if (getY(chessGame.getPieces[id].position) < 8) { sm = directional('south',id,chessGame)};
+      if (getX(chessGame.getPieces[id].position) < 8) { em = directional('east',id,chessGame)};
+      if (getX(chessGame.getPieces[id].position) > 1) { wm = directional('west',id,chessGame)};
+      if (getY(chessGame.getPieces[id].position) > 1 && getX(chessGame.getPieces[id].position) > 1) { nwm = directional('northwest',id,chessGame)};
+      if (getY(chessGame.getPieces[id].position) > 1 && getX(chessGame.getPieces[id].position) < 8) { nem = directional('northeast',id,chessGame)};
+      if (getY(chessGame.getPieces[id].position) < 8 && getX(chessGame.getPieces[id].position) < 8) { sem = directional('southeast',id,chessGame)};
+      if (getY(chessGame.getPieces[id].position) < 8 && getX(chessGame.getPieces[id].position) > 1) { swm = directional('southwest',id,chessGame)};
         let blocked = true;
         if (Number.isInteger(nm[0]) || Number.isInteger(sm[0]) || Number.isInteger(em[0]) || Number.isInteger(wm[0]) ||
         Number.isInteger(nwm[0]) || Number.isInteger(nem[0]) || Number.isInteger(sem[0]) || Number.isInteger(swm[0])) blocked = false;
@@ -522,17 +524,16 @@ const moves = (id,chessGame) => {
         }
     }
     break;
-      case "White King" :
-      case "Black King" :
-      {
-        if (getY(chessGame.getPieces[id].position) > 1) { nm = north(id,chessGame)};
-        if (getY(chessGame.getPieces[id].position) < 8) { sm = south(id,chessGame)};
-        if (getX(chessGame.getPieces[id].position) < 8) { em = east(id,chessGame)};
-        if (getX(chessGame.getPieces[id].position) > 1) { wm = west(id,chessGame)};
-        if (getY(chessGame.getPieces[id].position) > 1 && getX(chessGame.getPieces[id].position) > 1) { nwm = northWest(id,chessGame)};
-        if (getY(chessGame.getPieces[id].position) > 1 && getX(chessGame.getPieces[id].position) < 8) { nem = northEast(id,chessGame)};
-        if (getY(chessGame.getPieces[id].position) < 8 && getX(chessGame.getPieces[id].position) < 8) { sem = southEast(id,chessGame)};
-        if (getY(chessGame.getPieces[id].position) < 8 && getX(chessGame.getPieces[id].position) > 1) { swm = southWest(id,chessGame)};
+    case "ng" :
+    {
+        if (getY(chessGame.getPieces[id].position) > 1) { nm = directional('north',id,chessGame)};
+        if (getY(chessGame.getPieces[id].position) < 8) { sm = directional('south',id,chessGame)};
+        if (getX(chessGame.getPieces[id].position) < 8) { em = directional('east',id,chessGame)};
+        if (getX(chessGame.getPieces[id].position) > 1) { wm = directional('west',id,chessGame)};
+        if (getY(chessGame.getPieces[id].position) > 1 && getX(chessGame.getPieces[id].position) > 1) { nwm = directional('northwest',id,chessGame)};
+        if (getY(chessGame.getPieces[id].position) > 1 && getX(chessGame.getPieces[id].position) < 8) { nem = directional('northeast',id,chessGame)};
+        if (getY(chessGame.getPieces[id].position) < 8 && getX(chessGame.getPieces[id].position) < 8) { sem = directional('southeast',id,chessGame)};
+        if (getY(chessGame.getPieces[id].position) < 8 && getX(chessGame.getPieces[id].position) > 1) { swm = directional('southwest',id,chessGame)};
           let blocked = true;
           if (Number.isInteger(nm[0]) || Number.isInteger(sm[0]) || Number.isInteger(em[0]) || Number.isInteger(wm[0]) ||
           Number.isInteger(nwm[0]) || Number.isInteger(nem[0]) || Number.isInteger(sem[0]) || Number.isInteger(swm[0])) blocked = false;
@@ -558,12 +559,11 @@ const moves = (id,chessGame) => {
           }
       }
     break;
-    case "White Pawn" :
-    case "Black Pawn" :
+    case "wn" :
     {
-      if (getY(chessGame.getPieces[id].position) > 1) { nm = north(id,chessGame,true)};
-      if (getY(chessGame.getPieces[id].position) > 1 && getX(chessGame.getPieces[id].position) > 1) { nwm = northWest(id,chessGame,true)};
-      if (getY(chessGame.getPieces[id].position) > 1 && getX(chessGame.getPieces[id].position) < 8) { nem = northEast(id,chessGame,true)};
+      if (getY(chessGame.getPieces[id].position) > 1) { nm = directional('north',id,chessGame,true)};
+      if (getY(chessGame.getPieces[id].position) > 1 && getX(chessGame.getPieces[id].position) > 1) { nwm = directional('northwest',id,chessGame,true)};
+      if (getY(chessGame.getPieces[id].position) > 1 && getX(chessGame.getPieces[id].position) < 8) { nem = directional('northeast',id,chessGame,true)};
       let blocked = true;
       if (Number.isInteger(nm[0]) || Number.isInteger(nem[0]) || Number.isInteger(nwm[0])) blocked = false;
       if (blocked === false){
@@ -578,78 +578,13 @@ const moves = (id,chessGame) => {
       } else { if (isNaN(nm[0])) result = result.concat(nm); }
     }
     break;
-    case "White King Knight" :
-    case "Black King Knight" :
-    case "White Queen Knight" :
-    case "Black Queen Knight" :
+    case "ht" :
     {
       result = knightMoves(id, chessGame);
     }
     break;
   }
   return result;
-};
-
-const north = (id,chessGame,isPawn = false) => {
-  let cr = compassRose();
-  while (cr.getNoMoreMoves === false){
-    cr.setLocation = piecePresent(chessGame.getPieces[id].position - (8 * (cr.getMoves + 1)))
-    if (cr.getLocation != -1) {
-      if (chessGame.getPieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0) && isPawn === false) {
-        let pieceCode = chessGame.getPieces[cr.getLocation].piece.slice(chessGame.getPieces[cr.getLocation].piece.length - 2);
-        if ((['en','ok'].includes(pieceCode) && [0,1].includes(id)) || (pieceCode === 'ng' && cr.getMoves === 0)) {
-          chessGame.setCheck = true;
-        }
-        cr.setResultInc = chessGame.getPieces[id].position - (8 * (cr.getMoves + 1));
-        cr.setNoMoreMoves = true; }
-      if (cr.getMoves === 0){ cr.setResult = chessGame.getPieces[cr.getLocation].piece; }
-      cr.setNoMoreMoves = true;
-    } else {  cr.setResultInc = chessGame.getPieces[id].position - (8 * (cr.getMoves + 1)); }
-    if (chessGame.getPieces[id].position - (8 * (cr.getMoves + 1)) < 0) cr.setNoMoreMoves = true;
-  }
-  return cr.getResult;
-};
-
-const northEast = (id,chessGame,isPawn = false) => {
-  let cr = compassRose();
-  while (cr.getNoMoreMoves === false){
-    cr.setLocation = piecePresent(chessGame.getPieces[id].position - (7 * (cr.getMoves + 1)))
-    if ((cr.getLocation != -1 && isPawn === false) || (cr.getLocation != -1 && isPawn === true && cr.getMoves === 0)) {
-      if (chessGame.getPieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
-        let pieceCode = chessGame.getPieces[cr.getLocation].piece.slice(chessGame.getPieces[cr.getLocation].piece.length - 2);
-        if ((['en','op'].includes(pieceCode) && [0,1].includes(id)) || (['wn','ng'].includes(pieceCode) && cr.getMoves === 0)) {
-          chessGame.setCheck = true;
-        }
-        cr.setResultInc = chessGame.getPieces[id].position - (7 * (cr.getMoves + 1));
-        cr.setNoMoreMoves = true; }
-      if (cr.getMoves === 0){ cr.setResult = chessGame.getPieces[cr.getLocation].piece; }
-      cr.setNoMoreMoves = true;
-    } else { if (isPawn === false) {cr.setResultInc = chessGame.getPieces[id].position - (7 * (cr.getMoves + 1));}
-     else { cr.setNoMoreMoves = true }}
-    if (chessGame.getPieces[id].position - (7 * (cr.getMoves + 1)) < 0  || getX(chessGame.getPieces[id].position - (7 * (cr.getMoves + 1))) === 1) cr.setNoMoreMoves = true;
-  }
-  return cr.getResult;
-};
-
-const northWest = (id,chessGame,isPawn = false) => {
-  let cr = compassRose();
-  while (cr.getNoMoreMoves === false){
-    cr.setLocation = piecePresent(chessGame.getPieces[id].position - (9 * (cr.getMoves + 1)))
-    if ((cr.getLocation != -1 && isPawn === false) || (cr.getLocation != -1 && isPawn === true && cr.getMoves === 0)) {
-      if (chessGame.getPieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
-        let pieceCode = chessGame.getPieces[cr.getLocation].piece.slice(chessGame.getPieces[cr.getLocation].piece.length - 2);
-        if ((['en','op'].includes(pieceCode) && [0,1].includes(id)) || (['wn','ng'].includes(pieceCode) && cr.getMoves === 0)) {
-          chessGame.setCheck = true;
-        }
-        cr.setResultInc = chessGame.getPieces[id].position - (9 * (cr.getMoves + 1));
-        cr.setNoMoreMoves = true; }
-      if (cr.getMoves === 0){ cr.setResult = chessGame.getPieces[cr.getLocation].piece; }
-      cr.setNoMoreMoves = true;
-    } else { if (isPawn === false) { cr.setResultInc = chessGame.getPieces[id].position - (9 * (cr.getMoves + 1));}
-     else { cr.setNoMoreMoves = true }}
-    if (chessGame.getPieces[id].position - (9 * (cr.getMoves + 1)) < 0 || getX(chessGame.getPieces[id].position - (9 * (cr.getMoves + 1))) === 8) cr.setNoMoreMoves = true;
-  }
-  return cr.getResult;
 };
 
 const piecePresent = (num) => {
@@ -684,66 +619,6 @@ const removeDups = (arr) => {
   return result;
 };
 
-const south = (id,chessGame) => {
-  let cr = compassRose();
-  while (cr.getNoMoreMoves === false){
-    cr.setLocation = piecePresent(chessGame.getPieces[id].position + (8 * (cr.getMoves + 1)))
-    if (cr.getLocation != -1) {
-      if (chessGame.getPieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
-        let pieceCode = chessGame.getPieces[cr.getLocation].piece.slice(chessGame.getPieces[cr.getLocation].piece.length - 2);
-        if ((['en','ok'].includes(pieceCode) && [0,1].includes(id)) || (pieceCode === 'ng' && cr.getMoves === 0)) {
-          chessGame.setCheck = true;
-        }
-        cr.setResultInc = chessGame.getPieces[id].position + (8 * (cr.getMoves + 1));
-        cr.setNoMoreMoves = true; }
-      if (cr.getMoves === 0){ cr.setResult = chessGame.getPieces[cr.getLocation].piece; }
-      cr.setNoMoreMoves = true;
-    } else { cr.setResultInc = chessGame.getPieces[id].position + (8 * (cr.getMoves + 1)); }
-    if (chessGame.getPieces[id].position + (8 * (cr.getMoves + 1)) > 63) cr.setNoMoreMoves = true;
-  }
-  return cr.getResult;
-};
-
-const southEast = (id,chessGame) => {
-  let cr = compassRose();
-  while (cr.getNoMoreMoves === false){
-    cr.setLocation = piecePresent(chessGame.getPieces[id].position + (9 * (cr.getMoves + 1)))
-    if (cr.getLocation != -1) {
-      if (chessGame.getPieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
-        let pieceCode = chessGame.getPieces[cr.getLocation].piece.slice(chessGame.getPieces[cr.getLocation].piece.length - 2);
-        if ((['en','op'].includes(pieceCode) && [0,1].includes(id)) || (pieceCode === 'ng' && cr.getMoves === 0)) {
-          chessGame.setCheck = true;
-        }
-        cr.setResultInc = chessGame.getPieces[id].position + (9 * (cr.getMoves + 1));
-        cr.setNoMoreMoves = true; }
-      if (cr.getMoves === 0){ cr.setResult = chessGame.getPieces[cr.getLocation].piece; }
-      cr.setNoMoreMoves = true;
-    } else { cr.setResultInc = chessGame.getPieces[id].position + (9 * (cr.getMoves + 1)); }
-    if (chessGame.getPieces[id].position + (9 * (cr.getMoves + 1)) > 63  || getX(chessGame.getPieces[id].position + (9 * (cr.getMoves + 1))) === 1) cr.setNoMoreMoves = true;
-  }
-  return cr.getResult;
-};
-
-const southWest = (id,chessGame) => {
-  let cr = compassRose();
-  while (cr.getNoMoreMoves === false){
-    cr.setLocation = piecePresent(chessGame.getPieces[id].position + (7 * (cr.getMoves + 1)))
-    if (cr.getLocation != -1) {
-      if (chessGame.getPieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
-        let pieceCode = chessGame.getPieces[cr.getLocation].piece.slice(chessGame.getPieces[cr.getLocation].piece.length - 2);
-        if ((['en','op'].includes(pieceCode) && [0,1].includes(id)) || (pieceCode === 'ng' && cr.getMoves === 0)) {
-          chessGame.setCheck = true;
-        }
-        cr.setResultInc = chessGame.getPieces[id].position + (7 * (cr.getMoves + 1));
-        cr.setNoMoreMoves = true; }
-      if (cr.getMoves === 0){ cr.setResult = chessGame.getPieces[cr.getLocation].piece; }
-      cr.setNoMoreMoves = true;
-    } else { cr.setResultInc = chessGame.getPieces[id].position + (7 * (cr.getMoves + 1)); }
-    if (chessGame.getPieces[id].position + (7 * (cr.getMoves + 1)) > 63  || getX(chessGame.getPieces[id].position + (7 * (cr.getMoves + 1))) === 8) cr.setNoMoreMoves = true;
-  }
-  return cr.getResult;
-};
-
 const stateOne = (chessGame) => {
   chessGame.setGameState = 1;
   boardRefresh(chessGame);
@@ -765,7 +640,7 @@ const stateTwo = (move, chessGame) => {
   chessGame.setGameState = 2;
   chessGame.setMovesAvailable = move.slice(1);
   chessGame.setChosenPiece = move[0];
-  instructionMessage.textContent = `Where would you like to move? \r\n Press button too select another piece.`;
+  instructionMessage.textContent = `Where would you like to move? \r\n Press button to select another piece.`;
   actionButton.textContent = 'Go Back'
   actionButton.removeEventListener("click", stateFourBound);
   actionButton.addEventListener("click", stateOneBound);
@@ -784,26 +659,6 @@ const stateFour = (player) => {
   chessGame.setGameState = 4;
   instructionMessage.textContent = `${player} player lost by conceding. \r\n It is wise to know your limitations, and folly not to push the envelope.\r\n Reload to play again.`;
   actionButton.style.visibility = "hidden";
-};
-
-const west = (id,chessGame) => {
-  let cr = compassRose();
-  while (cr.getNoMoreMoves === false){
-    cr.setLocation = piecePresent(chessGame.getPieces[id].position - (1 * (cr.getMoves + 1)))
-    if (cr.getLocation != -1) {
-      if (chessGame.getPieces[cr.getLocation].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
-        let pieceCode = chessGame.getPieces[cr.getLocation].piece.slice(chessGame.getPieces[cr.getLocation].piece.length - 2);
-        if ((['en','ok'].includes(pieceCode) && [0,1].includes(id)) || (pieceCode === 'ng' && cr.getMoves === 0)) {
-          chessGame.setCheck = true;
-        }
-        cr.setResultInc = chessGame.getPieces[id].position - (1 * (cr.getMoves + 1));
-        cr.setNoMoreMoves = true; }
-      if (cr.getMoves === 0){ cr.setResult = chessGame.getPieces[cr.getLocation].piece; }
-      cr.setNoMoreMoves = true;
-    } else { cr.setResultInc = chessGame.getPieces[id].position - (1 * (cr.getMoves + 1)); }
-    if (chessGame.getPieces[id].position - (1 * (cr.getMoves + 1)) < 0 || getX(chessGame.getPieces[id].position - (1 * (cr.getMoves + 1))) === 8 ) cr.setNoMoreMoves = true;
-  }
-  return cr.getResult;
 };
 
 let chessGame = game;
