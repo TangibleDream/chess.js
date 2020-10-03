@@ -169,7 +169,12 @@ const directional = (direction, id, chessGame, isPawn = false) => {
       }
       if (cr.getMoves === 0){ cr.setResult = chessGame.getPieces[cr.getLocation].piece; }
       cr.setNoMoreMoves = true;
-    } else { cr.setResultInc = chessGame.getPieces[id].position + offset(dmap[direction][1],cr.getMoves,dmap[direction][0]); }
+    } else { 
+      if ((isPawn && ['northeast','northwest'].includes(direction)) === false) { 
+        cr.setResultInc = chessGame.getPieces[id].position + offset(dmap[direction][1],cr.getMoves,dmap[direction][0]);
+      } else
+      { cr.setNoMoreMoves = true; }   
+    }
     if (['east', 'south', 'southeast', 'southwest'].includes(direction)) {
       if (chessGame.getPieces[id].position + offset(dmap[direction][1],cr.getMoves,dmap[direction][0]) > 63) cr.setNoMoreMoves = true;
     }
@@ -286,12 +291,9 @@ const inCheck = (chessGame) => {
 }
 
 const knightMoves = (id,chessGame) => {
-  let mathSet=[-17,-15,-10,-6,6,10,15,17]
-  let removeSet = []
-  removeSet = removeSet.concat(checkKnightX(chessGame.getPieces[id].position))
-  removeSet = removeSet.concat(checkKnightY(chessGame.getPieces[id].position))
-  removeSet = removeDups(removeSet);
-  mathSet = remove(mathSet, removeSet);
+  let mathSet= new Set([-17,-15,-10,-6,6,10,15,17])
+  checkKnightX(chessGame.getPieces[id].position).forEach(item => {mathSet.delete(item)});
+  checkKnightY(chessGame.getPieces[id].position).forEach(item => {mathSet.delete(item)});
   let position = -1
   let result = [id]
   for (let correction of mathSet){
