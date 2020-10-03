@@ -72,7 +72,6 @@ const boardRefresh = (chessGame) => {
             anchorElement[i].id = `${i}`;
             anchorElement[i].href = '#';
             element.appendChild(anchorElement[i]);
-            document.getElementById(`${i}`).addEventListener("click", function(e) { movePiece(this.id, chessGame) });
             document.getElementById(`${i}`).appendChild(squares[i]);
         } else {
             element.appendChild(squares[i]);
@@ -82,6 +81,7 @@ const boardRefresh = (chessGame) => {
           element.appendChild(document.createElement('br'));
         };
     };
+    if (chessGame.gameState === 0) element.addEventListener("click", function(e) { if(findSquare(e) != -1 ) movePiece(findSquare(e), chessGame)});
 };
 
 const compassRose = () => {
@@ -181,6 +181,12 @@ const directional = (direction, id, chessGame, isPawn = false) => {
     }
   }
   return cr.getResult;
+}
+
+const findSquare = (e) => {
+  let element = document.elementFromPoint(e.pageX, e.pageY);
+  let pe = element.parentNode
+  return pe.id
 }
 
 const game = {
