@@ -567,6 +567,7 @@ const setDestination = (id,chessGame) => {
     }}
    else { invalidMove(pieceCode(chessGame,chessGame.getChosenPiece),chessGame); }
 }
+
 const setPointOfOrigin = (id,chessGame) => {
   for (let i = 0; i < 32; i ++){
     if (chessGame.getPieces[i].position === parseInt(id)){
