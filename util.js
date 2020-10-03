@@ -81,8 +81,24 @@ const boardRefresh = (chessGame) => {
           element.appendChild(document.createElement('br'));
         };
     };
-    if (chessGame.gameState === 0) element.addEventListener("click", function(e) { if(findSquare(e) != -1 ) movePiece(findSquare(e), chessGame)});
+    if (chessGame.gameState === 0) element.addEventListener("click", function(e) { if(findSquare(e) != -1 ) squareHub(findSquare(e), chessGame)});
 };
+
+const castle = (type,chessGame) => {
+  let kinko = {'short' : [[0,62],[1,57]],'long' : [[0,58],[1,61]]};
+  let castleGo = window.confirm("Would you like to castle?");
+  if (castleGo) {
+    let kingLoc = (chessGame.getColorPlaying === 'White' ? 0 : 1);
+    chessGame.setDestination = (chessGame.getColorPlaying === 'White' ? kinko[type][0] : kinko[type][1]);
+    if (kingLoc === 0){
+      chessGame.setShortCastleWhite = false;
+      chessGame.setLongCastleWhite = false;
+    } else {
+      chessGame.setShortCastleBlack = false;
+      chessGame.setLongCastleBlack = false;
+    }
+  }
+}
 
 const compassRose = () => {
   let Object = {
@@ -113,6 +129,14 @@ const changePlayers = (chessGame) => {
   }
   stateOne(chessGame);
 };
+
+const checkCastle = (pc, id, chessGame) => {
+  let result = 'none';
+  let castles = {'White King Rook' : [61, chessGame.getShortCastleWhite], 'Black King Rook': [58,chessGame.getShortCastleBlack], 'White Queen Rook' : [59,chessGame.getLongCastleWhite], 'Black Queen Rook': [60,chessGame.getLongCastleBlack]}
+  if((pc in castles && [61,58].includes(castles[pc][0]) && castles[pc][1] === true)) result = 'short';
+  if((pc in castles && [59,60].includes(castles[pc][0]) && castles[pc][1] === true)) result = 'long';
+  return result
+}
 
 const checkKnightX = (loc) => {
   let result = []
@@ -290,6 +314,19 @@ const inCheck = (chessGame) => {
   return result;
 }
 
+const invalidMove = (pc, chessGame) => {
+  let pm = "";
+  (pc === 'wn' && [48,49,50,51,52,53,54,55].includes(chessGame.getPieces[chessGame.getChosenPiece].position)) ? pm = '2 spaces' : '1 space';
+  let helpfulMessages = {'wn':`This pawn can move ${pm} and capture diagonally 1 space where possible. Either select a valid square or \r\n Press \'go back\' and Select a different piece.`,
+                         'ok':'A rook can move vertically and horizontally where not blocked. Either select a valid square or \r\n Press \'go back\' and Select a different piece.',
+                         'ht':'A knight can move in a 1-2 or 2-1 L pattern. Either select a valid square or \r\n Press \'go back\' and Select a different piece.',
+                         'op':`A bishop can move diagonally where not blocked. Either select a valid square or \r\n Press \'go back\' and Select a different piece.`,
+                         'en':'A Queen can move vertically, horizontally, and diagonally where not blocked. Either select a valid square or \r\n Press \'go back\' and Select a different piece.',
+                         'ng':'A King can move vertically, horizontally, and diagonally 1 space  where not blocked. Either select a valid square or \r\n Press \'go back\' and Select a different piece.'
+                        }
+  instructionMessage.textContent = helpfulMessages[pc];
+}
+
 const knightMoves = (id,chessGame) => {
   let mathSet= new Set([-17,-15,-10,-6,6,10,15,17])
   checkKnightX(chessGame.getPieces[id].position).forEach(item => {mathSet.delete(item)});
@@ -308,139 +345,6 @@ const knightMoves = (id,chessGame) => {
   }
   return result;
 }
-
-const movePiece = (id,chessGame) => {
-  let capture = false;
-  let capturePiece = -1;
-  let init = false;
-  for (let i = 0; i < 32; i ++){
-    if (chessGame.getPieces[i].position === parseInt(id)){
-      switch(chessGame.getGameState) {
-        case 2:
-          capture = true;
-          capturePiece = chessGame.getPieces[i];
-        break;
-        case 1:
-          if(chessGame.getPieces[i].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)){
-            instructionMessage.setAttribute('style', 'white-space: pre;');
-            instructionMessage.textContent = `This is not a ${chessGame.getColorPlaying.toLowerCase()} player piece. \r\n Select your own color piece.`;
-          } else {
-            let move = moves(i,chessGame);
-            instructionMessage.setAttribute('style', 'white-space: pre;');
-            if (isNaN(move[0])) { instructionMessage.textContent = `You are blocked (${move}) \r\n Select a different piece.`; }
-            else {
-              stateTwo(move, chessGame);
-              init = true;
-            }
-          }
-        break;
-      }
-    }
-  }
-  if (game.getGameState === 2 && init === false) {
-    if (game.getMovesAvailable.includes(parseInt(id))) {     //V A L I D   S Q U A R E   L O G I C
-      let oldDest = chessGame.getPieces[chessGame.getChosenPiece].position;
-      let oldCapture = -1
-      if (capture === true) {
-        oldCapture = capturePiece.position;
-        capturePiece.position = -1
-      };
-      chessGame.setDestination = [chessGame.getChosenPiece, parseInt(id)];
-      if (chessGame.getCheck && inCheck(chessGame)) {        //C H E C K   L O G I C   B E G I N S
-        instructionMessage.textContent = 'This move doesn\'t get you out of check \r\n\'go back\' and Select a different piece.';
-        chessGame.setDestination = [chessGame.getChosenPiece, oldDest];
-        if (capture === true) {
-          capturePiece.position = oldCapture;
-        };
-        boardRefresh(chessGame);
-      } else {
-        if (inCheck(chessGame)){
-          instructionMessage.textContent = 'This move will put you in check \r\n\'go back\' and Select a different piece.';
-          chessGame.setDestination = [chessGame.getChosenPiece, oldDest];
-          if (capture === true) {
-            capturePiece.position = oldCapture;
-          };
-          boardRefresh(chessGame);
-        } else {                                            //C H E C K   L O G I C   E N D S
-        //castle go logic
-          if((pieceCode(chessGame,chessGame.getChosenPiece, true) === 'White King Rook' && parseInt(id) === 61 && chessGame.getShortCastleWhite === true) || (pieceCode(chessGame,chessGame.getChosenPiece, true) === 'Black King Rook' && parseInt(id) === 58 && chessGame.getShortCastleBlack === true) ){
-            let castleGo = window.confirm("Would you like to castle?");
-            if (castleGo) {
-              let kingLoc = (chessGame.getColorPlaying === 'White' ? 0 : 1);
-              chessGame.setDestination = (chessGame.getColorPlaying === 'White' ? [0,62] : [1,57]);
-              if (kingLoc === 0){
-                chessGame.setShortCastleWhite = false;
-                chessGame.setLongCastleWhite = false;
-              } else {
-                chessGame.setShortCastleBlack = false;
-                chessGame.setLongCastleBlack = false;
-              }
-            }
-          }else{
-            switch(chessGame.getPieces[chessGame.getChosenPiece].piece){
-              case 'White King Rook': chessGame.setShortCastleWhite = false; break;
-              case 'Black King Rook': chessGame.setShortCastleBlack = false; break;
-              case 'White King': chessGame.setShortCastleWhite = false; chessGame.setLongCastleWhite = false; break;
-              case 'Black King': chessGame.setShortCastleBlack = false; chessGame.setLongCastleBlack = false; break;
-            }
-          }
-          if((pieceCode(chessGame,chessGame.getChosenPiece, true) === 'White Queen Rook' && parseInt(id) === 59 && chessGame.getLongCastleWhite === true) || (pieceCode(chessGame,chessGame.getChosenPiece, true) === 'Black Queen Rook' && parseInt(id) === 60 && chessGame.getLongCastleBlack === true) ){
-            let castleGo = window.confirm("Would you like to castle?");
-            if (castleGo) {
-              let kingLoc = (chessGame.getColorPlaying === 'White' ? 0 : 1);
-              chessGame.setDestination = (chessGame.getColorPlaying === 'White' ? [0,58] : [1,61]);
-              if (kingLoc === 0){
-                chessGame.setShortCastleWhite = false;
-                chessGame.setLongCastleWhite = false;
-              } else {
-                chessGame.setShortCastleBlack = false;
-                chessGame.setLongCastleBlack = false;
-              }
-            }
-          }else{
-            switch(chessGame.getPieces[chessGame.getChosenPiece].piece){
-              case 'White Queen Rook': chessGame.setLongCastleWhite = false; break;
-              case 'Black Queen Rook': chessGame.setLongCastleBlack = false; break;
-            }
-          }
-          // P A W N   P R O M O T I O N
-        if ([0,1,2,3,4,5,6,7].includes(parseInt(id)) && pieceCode(chessGame,chessGame.getChosenPiece) == 'wn'){
-          promotionMessage.style.visibility = "visible";
-          promotionForm.style.visibility = "visible";
-          actionButton.style.visibility = "hidden";
-        }
-        boardRefresh(chessGame);
-        stateThree(chessGame);
-      }}
-    } else {   //I N V A L I D   S Q U A R E   L O G I C
-      switch (pieceCode(chessGame,chessGame.getChosenPiece)) {
-        case 'wn':
-          let pm = '1 space';
-          ([48,49,50,51,52,53,54,55].includes(chessGame.getPieces[chessGame.getChosenPiece].position) ? pm = '2 spaces' : pm = '1 space');
-          instructionMessage.textContent = `This pawn can move ${pm} and capture diagonally 1 space where possible. Either select a valid square or \r\n Press \'go back\' and Select a different piece.`;
-        break;
-        case 'ok':
-          instructionMessage.textContent = `A rook can move vertically and horizontally where not blocked. Either select a valid square or \r\n Press \'go back\' and Select a different piece.`;
-        break;
-        case 'ht':
-          instructionMessage.textContent = `A knight can move in a 1-2 or 2-1 L pattern. Either select a valid square or \r\n Press \'go back\' and Select a different piece.`;
-        break;
-        case 'op':
-          instructionMessage.textContent = `A bishop can move diagonally where not blocked. Either select a valid square or \r\n Press \'go back\' and Select a different piece.`;
-        break;
-        case 'en':
-          instructionMessage.textContent = `A Queen can move vertically, horizontally, and diagonally where not blocked. Either select a valid square or \r\n Press \'go back\' and Select a different piece.`;
-        break;
-        case 'ng':
-          instructionMessage.textContent = `A King can move vertically, horizontally, and diagonally 1 space  where not blocked. Either select a valid square or \r\n Press \'go back\' and Select a different piece.`;
-        break;
-        default :
-          instructionMessage.textContent = 'This piece can\'t move here. Either select a valid square or \r\n Press \'go back\' and Select a different piece.';
-        break;
-      }
-    }
-  }
-};
 
 const moves = (id,chessGame) => {
   let result = [];
@@ -613,19 +517,75 @@ const pawnPromotion = (chessGame, promotionChoice) => {
   actionButton.style.visibility = "visible";
 }
 
-const remove = (setArr, toDelArr) => {
-  let index = -1;
-  for (let dels of toDelArr) {
-    index = setArr.indexOf(dels);
-    setArr.splice(index, 1);
+const setDestination = (id,chessGame) => {
+  let capture = false;
+  let capturePiece = -1;
+  for (let i = 0; i < 32; i ++){
+    if (chessGame.getPieces[i].position === parseInt(id)){
+      capture = true;
+      capturePiece = chessGame.getPieces[i];
+    }
   }
-  return setArr;
-};
+  if (game.getMovesAvailable.includes(parseInt(id))) {     //V A L I D   S Q U A R E   L O G I C
+    let oldDest = chessGame.getPieces[chessGame.getChosenPiece].position;
+    let oldCapture = -1
+    if (capture === true) {
+      oldCapture = capturePiece.position;
+      capturePiece.position = -1
+    };
+    chessGame.setDestination = [chessGame.getChosenPiece, parseInt(id)];
+    let sotCheck = chessGame.getCheck;
+    if (inCheck(chessGame)) {  //C H E C K   L O G I C   B E G I N S
+      instructionMessage.textContent= (sotCheck) ? 'This move doesn\'t get you out of check \r\n\'go back\' and Select a different piece.' : 'This move will put you in check \r\n\'go back\' and Select a different piece.';
+      chessGame.setDestination = [chessGame.getChosenPiece, oldDest];
+      if (capture === true) {
+        capturePiece.position = oldCapture;
+      };
+      boardRefresh(chessGame);
+    } else {                                            //C H E C K   L O G I C   E N D S
+      //castle go logic
+        let canCastle = checkCastle(pieceCode(chessGame,chessGame.getChosenPiece, true),id,chessGame);
+        if (canCastle != 'none') { castle(canCastle,chessGame) }
+        else{
+          switch(chessGame.getPieces[chessGame.getChosenPiece].piece){
+            case 'White King Rook': chessGame.setShortCastleWhite = false; break;
+            case 'Black King Rook': chessGame.setShortCastleBlack = false; break;
+            case 'White Queen Rook': chessGame.setLongCastleWhite = false; break;
+            case 'Black Queen Rook': chessGame.setLongCastleBlack = false; break;
+            case 'White King': chessGame.setShortCastleWhite = false; chessGame.setLongCastleWhite = false; break;
+            case 'Black King': chessGame.setShortCastleBlack = false; chessGame.setLongCastleBlack = false; break;
+          }
+        }
+        // P A W N   P R O M O T I O N
+      if ([0,1,2,3,4,5,6,7].includes(parseInt(id)) && pieceCode(chessGame,chessGame.getChosenPiece) === 'wn'){
+        promotionMessage.style.visibility = "visible";
+        promotionForm.style.visibility = "visible";
+        actionButton.style.visibility = "hidden";
+      }
+      boardRefresh(chessGame);
+      stateThree(chessGame);
+    }}
+   else { invalidMove(pieceCode(chessGame,chessGame.getChosenPiece),chessGame); }
+}
+const setPointOfOrigin = (id,chessGame) => {
+  for (let i = 0; i < 32; i ++){
+    if (chessGame.getPieces[i].position === parseInt(id)){
+      if(chessGame.getPieces[i].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)){
+        instructionMessage.setAttribute('style', 'white-space: pre;');
+        instructionMessage.textContent = `This is not a ${chessGame.getColorPlaying.toLowerCase()} player piece. \r\n Select your own color piece.`;
+      } else {
+        let move = moves(i,chessGame);
+        instructionMessage.setAttribute('style', 'white-space: pre;');
+        if (isNaN(move[0])) { instructionMessage.textContent = `You are blocked (${move}) \r\n Select a different piece.`; }
+        else { stateTwo(move, chessGame); }
+      }      
+    }
+  }
+}
 
-const removeDups = (arr) => {
-  let result = [...new Set(arr)];
-  return result;
-};
+const squareHub = (id,chessGame) => {
+  chessGame.gameState === 1 ? setPointOfOrigin(id,chessGame) : setDestination(id,chessGame);
+}
 
 const stateOne = (chessGame) => {
   chessGame.setGameState = 1;
