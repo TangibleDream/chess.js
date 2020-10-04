@@ -140,8 +140,11 @@ const changePlayers = (chessGame) => {
 const checkCastle = (pc, id, chessGame) => {
   let result = 'none';
   let castles = {'White King Rook' : [61, chessGame.getShortCastleWhite], 'Black King Rook': [58,chessGame.getShortCastleBlack], 'White Queen Rook' : [59,chessGame.getLongCastleWhite], 'Black Queen Rook': [60,chessGame.getLongCastleBlack]}
-  if((pc in castles && [61,58].includes(castles[pc][0]) && castles[pc][1] === true)) result = 'short';
-  if((pc in castles && [59,60].includes(castles[pc][0]) && castles[pc][1] === true)) result = 'long';
+  id = parseInt(id);
+  if(pc in castles){
+    if([61,58].includes(id) && castles[pc][1] === true) result = 'short';
+    if([59,60].includes(id) && castles[pc][1] === true) result = 'long';
+  }
   return result
 }
 
