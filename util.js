@@ -4,9 +4,6 @@ import pieces from './pieces.js'
 import { adjTht, bound, disTht, osNum, posNeg } from'./directions.js'
 
 const addTrophies = (tArr, chessGame) => {
-  //captured pieces of the color playing goto the top
-  //So if white is playing, then if i is  0..15 iy gets added to 
-  //the top trophy case, 16 and up goes to the bottom
   let top = document.getElementById('topTrophyCase');
   let bottom = document.getElementById('bottomTrophyCase');
   let trophies = []
@@ -19,7 +16,6 @@ const addTrophies = (tArr, chessGame) => {
     trophies[tCount] = document.createElement('img');
     trophies[tCount].src = `./images/${images[item]}wbkgr.png`;
     trophies[tCount].style.width = "1%";
-    //top.appendChild(trophies[tCount]);
     tCount++
   })
   trophies.forEach(item => {
