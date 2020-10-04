@@ -3,15 +3,43 @@ import { flipValue, getY, getX, isOpponent, isThreat, offset, pieceCode, squareC
 import pieces from './pieces.js'
 import { adjTht, bound, disTht, osNum, posNeg } from'./directions.js'
 
+const addTrophies = (tArr, chessGame) => {
+  let top = document.getElementById('topTrophyCase');
+  let bottom = document.getElementById('bottomTrophyCase');
+  let trophies = []
+  let tCount = 0
+  let images = {0:'wking', 1:'bking',2:'wquen', 3:'bquen',4:'wbishop', 5:'bbishop',6:'wbishop', 7:'bbishop',
+                8:'wknight', 9:'bknight',10:'wknight', 11:'bknight',12:'wrook', 13:'brook',14:'wrook', 15:'brook',
+                16:'wpwn', 17:'wpwn',18:'wpwn', 19:'wpwn',20:'wpwn', 21:'wpwn',22:'wpwn', 23:'wpwn',
+                24:'bpwn', 25:'bpwn',26:'bpwn', 27:'bpwn',28:'bpwn', 29:'bpwn',30:'bpwn', 31:'bpwn'}
+  tArr.forEach(item => {
+    trophies[tCount] = document.createElement('img');
+    trophies[tCount].src = `./images/${images[item]}wbkgr.png`;
+    trophies[tCount].style.width = "1%";
+    tCount++
+  })
+  trophies.forEach(item => {
+    if (chessGame.colorPlaying === 'White') {
+      if(item.src.charAt(29) === 'w'){ //will change with server and filepath
+        top.appendChild(item);
+      }
+      else { bottom.appendChild(item); }
+    }
+    else {
+      if(item.src.charAt(29) === 'w'){ bottom.appendChild(item); }
+      else { top.appendChild(item); }
+    }
+  })
+}
+
 const boardRefresh = (chessGame) => {
     let squares = [];
     let anchorElement = [];
     let addAnchor = false;
     let pieceNum = -1;
     let element = document.getElementById('chessBoard');
-    while (element.firstChild) {
-      element.removeChild(element.firstChild);
-    }
+
+    clearParent('chessBoard');
 
     for (let i = 0; i < 64; i ++){
         addAnchor = false;
@@ -82,6 +110,7 @@ const boardRefresh = (chessGame) => {
         };
     };
     if (chessGame.gameState === 0) element.addEventListener("click", function(e) { if(findSquare(e) != -1 ) squareHub(findSquare(e), chessGame)});
+  trophyRefresh(chessGame);
 };
 
 const castle = (type,chessGame) => {
@@ -99,28 +128,6 @@ const castle = (type,chessGame) => {
     }
   }
 }
-
-const compassRose = () => {
-  let Object = {
-    result: [],
-    get getResult() { return this.result; },
-    set setResult(result) { this.result.push(result); },
-    set setResultInc(result) {
-      this.result.push(result);
-      this.moves++;
-    },
-    moves: 0,
-    get getMoves() { return this.moves; },
-    get incMoves() { this.moves++; },
-    location: 0,
-    get getLocation() { return this.location; },
-    set setLocation(location) { this.location = location; },
-    noMoreMoves: false,
-    get getNoMoreMoves() { return this.noMoreMoves; },
-    set setNoMoreMoves(nMMBool) { this.noMoreMoves = nMMBool; }
-  }
-  return(Object);
-};
 
 const changePlayers = (chessGame) => {
   (chessGame.getColorPlaying === 'White' ? chessGame.setColorPlaying = 'Black' : chessGame.setColorPlaying = 'White');
@@ -174,6 +181,35 @@ const checkKnightY = (loc) => {
       break;
   }
   return result;
+};
+
+const clearParent = (id) => {
+  let element = document.getElementById(id);
+  while (element.firstChild) {
+    element.removeChild(element.firstChild);
+  }
+}
+
+const compassRose = () => {
+  let Object = {
+    result: [],
+    get getResult() { return this.result; },
+    set setResult(result) { this.result.push(result); },
+    set setResultInc(result) {
+      this.result.push(result);
+      this.moves++;
+    },
+    moves: 0,
+    get getMoves() { return this.moves; },
+    get incMoves() { this.moves++; },
+    location: 0,
+    get getLocation() { return this.location; },
+    set setLocation(location) { this.location = location; },
+    noMoreMoves: false,
+    get getNoMoreMoves() { return this.noMoreMoves; },
+    set setNoMoreMoves(nMMBool) { this.noMoreMoves = nMMBool; }
+  }
+  return(Object);
 };
 
 const directional = (direction, id, chessGame, isPawn = false) => {
@@ -585,7 +621,8 @@ const setPointOfOrigin = (id,chessGame) => {
 }
 
 const squareHub = (id,chessGame) => {
-  chessGame.gameState === 1 ? setPointOfOrigin(id,chessGame) : setDestination(id,chessGame);
+  if (chessGame.gameState === 2) setDestination(id,chessGame);
+  if (chessGame.gameState === 1) setPointOfOrigin(id,chessGame);
 }
 
 const stateOne = (chessGame) => {
@@ -629,6 +666,20 @@ const stateFour = (chessGame) => {
   instructionMessage.textContent = `${chessGame.getColorPlaying} player lost by conceding. \r\n It is wise to know your limitations, and folly not to push the envelope.\r\n Reload to play again.`;
   actionButton.style.visibility = "hidden";
 };
+
+const trophyRefresh = (chessGame) => {
+  clearParent('topTrophyCase');
+  clearParent('bottomTrophyCase');
+  let trophyPieces = [];
+  let pl = -1;
+  for(let i = 0; i < 32; i++){
+    pl = chessGame.getPieces[i].position;
+    if(pl === -1) {
+      trophyPieces = trophyPieces.concat(i);   
+    }
+  }
+  addTrophies(trophyPieces, chessGame);
+}
 
 let chessGame = game;
 boardRefresh(chessGame);
