@@ -32,6 +32,40 @@ const addTrophies = (tArr, chessGame) => {
   })
 }
 
+const blockSet = (chessGame) => {
+  let result = [];
+  let myMoves = [];
+  let addPiece = false;
+  myPieces(chessGame).forEach(item => {
+    addPiece = false;
+    myMoves = moves(item,chessGame);
+    myMoves.shift();
+    myMoves.forEach(item => {
+      chessGame.getThreatPath.includes(item) ? addPiece = true : addPiece = addPiece;
+    })
+    if (addPiece === true) result = result.concat(item);
+  })
+  result.shift();
+  return result;
+} 
+
+const blockThreat = (chessGame) => {
+  inCheck(chessGame)
+  let result = false;
+  if (chessGame.getThreatPath.length > 0){ //oversimplification if chessGame.getThreat > 1 one piece could be adjacent and threatPath would still be populated by 2nd piece
+    let adjacent = false
+    chessGame.getThreats.forEach(item => {
+      if (['wn','ng','ht'].includes(item.slice(item.length - 2))) adjacent = true;
+    })
+    if (adjacent === false) {
+      blockSet(chessGame).forEach(item => {
+        if (moveAwayFromThreat(chessGame, item) === true) result = true;
+      })
+    }
+  }
+  return result;
+}
+
 const boardRefresh = (chessGame) => {
     let squares = [];
     let anchorElement = [];
@@ -112,6 +146,32 @@ const boardRefresh = (chessGame) => {
     if (chessGame.gameState === 0) element.addEventListener("click", function(e) { if(findSquare(e) != -1 ) squareHub(findSquare(e), chessGame)});
   trophyRefresh(chessGame);
 };
+
+const captureThreat = (chessGame) => {
+  inCheck(chessGame);
+  let result = false;
+  let myMoves = [];
+  let captureSet = [];
+  let curLoc = - 1;
+  let curThreatId = threatId(chessGame)
+  let curThreatLoc = chessGame.getThreatLoc[0]
+  if (chessGame.getThreatLoc.length === 1){
+    myPieces(chessGame).forEach(item => {
+      myMoves = moves(item,chessGame);
+      myMoves.shift();
+      if (myMoves.includes(chessGame.getThreatLoc[0])) captureSet = captureSet.concat(item);
+    });
+  }
+  (captureSet).forEach(item => {
+    curLoc = chessGame.getPieces[item].position;
+    chessGame.setDestination = [curThreatId, -1];
+    chessGame.setDestination = [item, curThreatLoc];
+    if (inCheck(chessGame) === false) result = true;
+    chessGame.setDestination = [curThreatId, curThreatLoc];
+    chessGame.setDestination = [item, curLoc]
+  })
+  return result;
+}
 
 const castle = (type,chessGame) => {
   let kinko = {'short' : [[0,62],[1,57]],'long' : [[0,58],[1,61]]};
@@ -224,7 +284,12 @@ const directional = (direction, id, chessGame, isPawn = false) => {
     cr.setLocation = piecePresent(chessGame.getPieces[id].position + offset(osNum(direction),cr.getMoves,posNeg(direction)));
     if (cr.getLocation != -1) {
       if (isOpponent(chessGame,cr.getLocation)) {
-        if (isThreat(dmap[direction][2], dmap[direction][3], pieceCode(chessGame,cr.getLocation), id, cr.getMoves)) chessGame.setCheck = true;
+        if (isThreat(dmap[direction][2], dmap[direction][3], pieceCode(chessGame,cr.getLocation), id, cr.getMoves)) {
+          chessGame.setCheck = true;
+          chessGame.setThreatPath = chessGame.getThreatPath.concat(cr.getResult);
+          chessGame.setThreats = chessGame.getThreats.concat(chessGame.getPieces[cr.getLocation].piece);
+          chessGame.setThreatLoc = chessGame.getThreatLoc.concat(chessGame.getPieces[cr.getLocation].position);
+        }
         if (isPawn === false || (isPawn && ['northeast','northwest'].includes(direction))){
           cr.setResultInc = chessGame.getPieces[id].position + offset(dmap[direction][1],cr.getMoves,dmap[direction][0]);
           cr.setNoMoreMoves = true;
@@ -268,6 +333,18 @@ const game = {
   longCastleWhite: true,
   shortCastleBlack: true,
   longCastleBlack: true,
+  threats: [],
+  threatPath: [],
+  threatLoc: [],
+  get getThreatLoc() {
+    return this.threatLoc
+  },
+  get getThreatPath() {
+    return this.threatPath;
+  },
+  get getThreats() {
+    return this.threats;
+  },
   get getShortCastleWhite() {
     return this.shortCastleWhite;
   },
@@ -297,6 +374,15 @@ const game = {
   },
   get getChosenPiece() {
     return this.chosenPiece;
+  },
+  set setThreatLoc(tlArr) {
+    this.threatLoc = tlArr;
+  },
+  set setThreatPath(threatPathArray) {
+    this.threatPath = threatPathArray;
+  },
+  set setThreats(threatArray) {
+    this.threats = threatArray;
   },
   set setShortCastleWhite(castleBool) {
     this.shortCastleWhite = castleBool;
@@ -338,6 +424,9 @@ const inCheck = (chessGame) => {
   let threats = [];
   let kingLoc = -1;
   chessGame.setCheck = false;
+  chessGame.setThreatPath = [];
+  chessGame.setThreats = [];
+  chessGame.setThreatLoc = [];
   (chessGame.getColorPlaying === 'White' ? kingLoc = 0 : kingLoc = 1);
   let KPos = chessGame.getPieces[kingLoc].position;
   if (getX(KPos) != 8) { directional('east',kingLoc,chessGame); }
@@ -350,6 +439,20 @@ const inCheck = (chessGame) => {
   if (getX(KPos) != 8 && getY(KPos) != 1) { directional('northeast',kingLoc,chessGame); }
   knightMoves(kingLoc,chessGame);
   if (chessGame.getCheck) result = true;
+  return result;
+}
+
+const inCheckMate = (chessGame) => {
+  let result = false;
+  if (inCheck(chessGame)){
+    if (moveAwayFromThreat(chessGame) === false){
+      if(blockThreat(chessGame) === false){
+        if(captureThreat(chessGame) === false) {
+          result = true;
+        }
+      }
+    }
+  }
   return result;
 }
 
@@ -377,11 +480,32 @@ const knightMoves = (id,chessGame) => {
     if (piecePresent(position) === -1  ) {result = result.concat(position);}
     else {
       if (chessGame.getPieces[piecePresent(position)].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
-        if (pieceCode(chessGame,piecePresent(position)) === 'ht') chessGame.setCheck = true;
+        if (pieceCode(chessGame,piecePresent(position)) === 'ht') {
+          chessGame.setCheck = true;
+          chessGame.setThreats = chessGame.getThreats.concat(chessGame.getPieces[piecePresent(position)].piece);
+          chessGame.setThreatLoc = chessGame.getThreatLoc.concat(chessGame.getPieces[piecePresent(position)].position);
+        }
         result = result.concat(position);
       }
     }
   }
+  return result;
+}
+
+const moveAwayFromThreat = (chessGame, bp = -1) => {
+  let result = false;
+  let testKing = (chessGame.colorPlaying === 'White' ? 0 : 1);
+  if (bp > -1) testKing = bp;
+  let kingLoc = chessGame.getPieces[testKing].position;
+  let myMoves = moves(testKing,chessGame);
+  if(Number.isInteger(myMoves[0])){
+    myMoves.shift();
+    myMoves.forEach(item => {
+      chessGame.setDestination = [testKing,item];
+      inCheck(chessGame) === false ? result = true : result = result;
+    })
+  };
+  chessGame.setDestination = [testKing,kingLoc];
   return result;
 }
 
@@ -538,6 +662,14 @@ const moves = (id,chessGame) => {
   return result;
 };
 
+const myPieces = (chessGame) => {
+  let result = []
+  for(let i=0;i<32;i++){
+    if (chessGame.getPieces[i].piece.charAt(0) === chessGame.getColorPlaying.charAt(0) && chessGame.getPieces[i].position != -1) result = result.concat(i); 
+  }
+  return result
+}
+
 const piecePresent = (num) => {
     let result = -1;
     for (let i = 0; i < 32; i ++){
@@ -666,9 +798,19 @@ const stateThree = (chessGame) => {
 
 const stateFour = (chessGame) => {
   chessGame.setGameState = 4;
-  instructionMessage.textContent = `${chessGame.getColorPlaying} player lost by conceding. \r\n It is wise to know your limitations, and folly not to push the envelope.\r\n Reload to play again.`;
+  let endCondition = `conceding. There were moves availble. \r\n It is wise to know your limitations, and folly not to push the envelope.\r\n Reload to play again.`
+  if (inCheckMate(chessGame)) endCondition = 'checkmate. Good game!'
+  instructionMessage.textContent = `${chessGame.getColorPlaying} player lost by ${endCondition}`;
   actionButton.style.visibility = "hidden";
 };
+
+const threatId = (chessGame) => {
+  let result = -1
+  for(let i=0; i < 32;i++){
+    if (chessGame.getPieces[i].position === chessGame.getThreatLoc[0]) result = i;
+  }
+  return result;
+}
 
 const trophyRefresh = (chessGame) => {
   clearParent('topTrophyCase');
