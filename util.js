@@ -456,6 +456,20 @@ const inCheckMate = (chessGame) => {
   return result;
 }
 
+const inStaleMate = (chessGame) => {
+  let myMoves = [];
+  let result = false;
+  if (inCheck(chessGame) === false) {
+    if (moveAwayFromThreat(chessGame) === false){
+      result = true; 
+      myPieces(chessGame).forEach(item => {        
+       if (moveAwayFromThreat(chessGame, item) === true) result = false;       
+      })
+    }
+  }
+  return result;
+}
+
 const invalidMove = (pc, chessGame) => {
   let pm = "";
   (pc === 'wn' && [48,49,50,51,52,53,54,55].includes(chessGame.getPieces[chessGame.getChosenPiece].position)) ? pm = '2 spaces' : '1 space';
@@ -800,6 +814,7 @@ const stateFour = (chessGame) => {
   chessGame.setGameState = 4;
   let endCondition = `conceding. There were moves availble. \r\n It is wise to know your limitations, and folly not to push the envelope.\r\n Reload to play again.`
   if (inCheckMate(chessGame)) endCondition = 'checkmate. Good game!'
+  if (inStaleMate(chessGame)) endCondition = '....hunh?  played to a draw?  Not to worry... Any time at the chessboard is time well spent!'
   instructionMessage.textContent = `${chessGame.getColorPlaying} player lost by ${endCondition}`;
   actionButton.style.visibility = "hidden";
 };
