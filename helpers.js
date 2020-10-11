@@ -1,3 +1,4 @@
+'use strict';
 import { checkKnightX, checkKnightY, clearParent, findSquare, flipValue, offset, getX, getY, squareColor } from "./util.js";
 import { stateOne, stateTwo, stateThree } from './state.js'
 import { promotionForm } from './game.js'

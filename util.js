@@ -1,3 +1,4 @@
+'use strict';
 const checkKnightX = (loc) => {
     let result = []
     switch (getX(loc)) {

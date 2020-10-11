@@ -1,3 +1,4 @@
+'use strict';
 import { boardRefresh, changePlayersBound, stateOneBound, stateFourBound } from './game.js'
 import { inCheck, inCheckMate, inStaleMate } from './helpers.js'
 
