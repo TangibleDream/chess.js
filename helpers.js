@@ -548,6 +548,7 @@ const myPieces = (chessGame) => {
 
 const pawnPromotion = (chessGame, promotionChoice) => {
   chessGame.setPiece = [chessGame.getChosenPiece, `${chessGame.getColorPlaying} ${promotionChoice.options[promotionForm.selectedIndex].value}`];
+  document.getElementById('promotionOption').value='Choose';
   promotionForm.style.visibility = "hidden";
   promotionMessage.style.visibility = "hidden";
   actionButton.style.visibility = "visible";
