@@ -199,11 +199,23 @@ const changePlayers = (chessGame) => {
 
 const checkCastle = (pc, id, chessGame) => {
   let result = 'none';
-  let castles = {'White King Rook' : [61, chessGame.getShortCastleWhite], 'Black King Rook': [58,chessGame.getShortCastleBlack], 'White Queen Rook' : [59,chessGame.getLongCastleWhite], 'Black Queen Rook': [60,chessGame.getLongCastleBlack]}
+  let king = -1;
+  let kingLoc = -1;
+  chessGame.getColorPlaying === 'White' ? king = 0 : king = 1;
+  kingLoc = chessGame.getPieces[king].position;
+  let castles = {'White King Rook' : [61, chessGame.getShortCastleWhite, [61,62]], 'Black King Rook': [58,chessGame.getShortCastleBlack, [58,57]], 'White Queen Rook' : [59,chessGame.getLongCastleWhite, [59,58]], 'Black Queen Rook': [60,chessGame.getLongCastleBlack, [60,61]]}
   id = parseInt(id);
   if(pc in castles){
-    if([61,58].includes(id) && castles[pc][1] === true) result = 'short';
-    if([59,60].includes(id) && castles[pc][1] === true) result = 'long';
+    let cc = false
+    castles[pc][2].forEach(item => { 
+      chessGame.setDestination = [king, item]
+      if (inCheck(chessGame)) cc = true;
+    });
+    chessGame.setDestination = [king, kingLoc]
+    if (cc === false){
+      if([61,58].includes(id) && castles[pc][1] === true) result = 'short';
+      if([59,60].includes(id) && castles[pc][1] === true) result = 'long';
+    }
   }
   return result
 }
