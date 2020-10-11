@@ -39,12 +39,15 @@ const stateThree = (chessGame) => {
 };
 
 const stateFour = (chessGame) => {
-    chessGame.setGameState = 4;
-    let endCondition = `conceding. There were moves availble. \r\n It is wise to know your limitations, and folly not to push the envelope.\r\n Reload to play again.`
-    if (inCheckMate(chessGame)) endCondition = 'checkmate. Good game!'
-    if (inStaleMate(chessGame)) endCondition = '....hunh?  played to a draw?  Not to worry... Any time at the chessboard is time well spent!'
-    instructionMessage.textContent = `${chessGame.getColorPlaying} player lost by ${endCondition}`;
-    actionButton.style.visibility = "hidden";
+    let quitter = window.confirm("Are you sure?");
+    if (quitter){
+        chessGame.setGameState = 4;
+        let endCondition = `conceding. There were moves availble. \r\n It is wise to know your limitations, and folly not to push the envelope.\r\n Reload to play again.`
+        if (inCheckMate(chessGame)) endCondition = 'checkmate. Good game!'
+        if (inStaleMate(chessGame)) endCondition = '....hunh?  played to a draw?  Not to worry... Any time at the chessboard is time well spent!'
+        instructionMessage.textContent = `${chessGame.getColorPlaying} player lost by ${endCondition}`;
+        actionButton.style.visibility = "hidden"; 
+    }
   };
 
 
