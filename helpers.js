@@ -52,7 +52,7 @@ const blockSet = (chessGame) => {
 const blockThreat = (chessGame) => {
   inCheck(chessGame)
   let result = false;
-  if (chessGame.getThreatPath.length > 0){ //oversimplification if chessGame.getThreat > 1 one piece could be adjacent and threatPath would still be populated by 2nd piece
+  if (chessGame.getThreatPath.length > 0){
     let adjacent = false
     chessGame.getThreats.forEach(item => {
       if (['wn','ng','ht'].includes(item.slice(item.length - 2))) adjacent = true;
@@ -72,6 +72,10 @@ const boardRefresh = (chessGame) => {
     let addAnchor = false;
     let pieceNum = -1;
     let element = document.getElementById('chessBoard');
+    let images = {'White King' : ["images\\wkingbbkgr.png","images\\wkingwbkgr.png"], 'White Queen' : ["images\\wquenbbkgr.png", "images\\wquenwbkgr.png"], 'White King Bishop' : ["images\\wbishopbbkgr.png", "images\\wbishopwbkgr.png"], 'White Queen Bishop' : ["images\\wbishopbbkgr.png", "images\\wbishopwbkgr.png"],
+                  'White King Knight' : ["images\\wknightbbkgr.png","images\\wknightwbkgr.png"],'White Queen Knight' : ["images\\wknightbbkgr.png","images\\wknightwbkgr.png"],'White King Rook' : ["images\\wrookbbkgr.png","images\\wrookwbkgr.png"],'White Queen Rook' : ["images\\wrookbbkgr.png","images\\wrookwbkgr.png"],'White Pawn':["images\\wpwnbbkgr.png","images\\wpwnwbkgr.png"],
+                  'Black King' : ["images\\bkingbbkgr.png","images\\bkingwbkgr.png"], 'Black Queen' : ["images\\bquenbbkgr.png", "images\\bquenwbkgr.png"], 'Black King Bishop' : ["images\\bbishopbbkgr.png", "images\\bbishopwbkgr.png"], 'Black Queen Bishop' : ["images\\bbishopbbkgr.png", "images\\bbishopwbkgr.png"],
+                  'Black King Knight' : ["images\\bknightbbkgr.png","images\\bknightwbkgr.png"],'Black Queen Knight' : ["images\\bknightbbkgr.png","images\\bknightwbkgr.png"],'Black King Rook' : ["images\\brookbbkgr.png","images\\brookwbkgr.png"],'Black Queen Rook' : ["images\\brookbbkgr.png","images\\brookwbkgr.png"],'Black Pawn':["images\\bpwnbbkgr.png","images\\bpwnwbkgr.png"]}
 
     clearParent('chessBoard');
 
@@ -81,50 +85,7 @@ const boardRefresh = (chessGame) => {
         pieceNum = piecePresent(i, chessGame);
         if (pieceNum > -1){
           addAnchor = true;
-          switch (chessGame.getPieces[pieceNum].piece){
-            case 'White King' :
-              squareColor(i) === "black" ? squares[i].src = "images\\wkingbbkgr.png" : squares[i].src = "images\\wkingwbkgr.png";
-              break;
-            case 'White Queen' :
-              squareColor(i) === "black" ? squares[i].src = "images\\wquenbbkgr.png" : squares[i].src = "images\\wquenwbkgr.png";
-              break;
-            case 'White King Bishop' :
-            case 'White Queen Bishop' :
-              squareColor(i) === "black" ? squares[i].src = "images\\wbishopbbkgr.png" : squares[i].src = "images\\wbishopwbkgr.png";
-              break;
-            case 'White King Knight' :
-            case 'White Queen Knight' :
-              squareColor(i) === "black" ? squares[i].src = "images\\wknightbbkgr.png" : squares[i].src = "images\\wknightwbkgr.png";
-              break;
-            case 'White King Rook' :
-            case 'White Queen Rook' :
-              squareColor(i) === "black" ? squares[i].src = "images\\wrookbbkgr.png" : squares[i].src = "images\\wrookwbkgr.png";
-              break;
-            case 'White Pawn':
-              squareColor(i) === "black" ? squares[i].src = "images\\wpwnbbkgr.png" : squares[i].src = "images\\wpwnwbkgr.png";
-              break;
-            case 'Black King' :
-              squareColor(i) === "black" ? squares[i].src = "images\\bkingbbkgr.png" : squares[i].src = "images\\bkingwbkgr.png";
-              break;
-            case 'Black Queen' :
-              squareColor(i) === "black" ? squares[i].src = "images\\bquenbbkgr.png" : squares[i].src = "images\\bquenwbkgr.png";
-              break;
-            case 'Black King Bishop' :
-            case 'Black Queen Bishop' :
-              squareColor(i) === "black" ? squares[i].src = "images\\bbishopbbkgr.png" : squares[i].src = "images\\bbishopwbkgr.png";
-              break;
-            case 'Black King Knight' :
-            case 'Black Queen Knight' :
-              squareColor(i) === "black" ? squares[i].src = "images\\bknightbbkgr.png" : squares[i].src = "images\\bknightwbkgr.png";
-              break;
-            case 'Black King Rook' :
-            case 'Black Queen Rook' :
-              squareColor(i) === "black" ? squares[i].src = "images\\brookbbkgr.png" : squares[i].src = "images\\brookwbkgr.png";
-              break;
-            case 'Black Pawn' :
-              squareColor(i) === "black" ? squares[i].src = "images\\bpwnbbkgr.png" : squares[i].src = "images\\bpwnwbkgr.png";
-              break;
-          }
+          squares[i].src = images[chessGame.getPieces[pieceNum].piece][squareColor(i) === "black" ? 0 : 1]
         } else {
           if (chessGame.getGameState === 2)  addAnchor = true;
           squareColor(i) === "black" ? squares[i].src = "images\\bbkgr.png" : squares[i].src = "images\\wbkgr.png";
@@ -138,10 +99,7 @@ const boardRefresh = (chessGame) => {
         } else {
             element.appendChild(squares[i]);
         }
-        if (((i+1) % 8 === 0) && (i < 60))
-        {
-          element.appendChild(document.createElement('br'));
-        };
+        if (((i+1) % 8 === 0) && (i < 60)) element.appendChild(document.createElement('br'));
     };
     if (chessGame.gameState === 0) element.addEventListener("click", function(e) { if(findSquare(e) != -1 ) squareHub(findSquare(e), chessGame)});
   trophyRefresh(chessGame);
@@ -162,7 +120,7 @@ const captureThreat = (chessGame) => {
       if (myMoves.includes(chessGame.getThreatLoc[0])) captureSet = captureSet.concat(item);
     });
   }
-  (captureSet).forEach(item => {
+  captureSet.forEach(item => {
     curLoc = chessGame.getPieces[item].position;
     chessGame.setDestination = [curThreatId, -1];
     chessGame.setDestination = [item, curThreatLoc];
@@ -307,30 +265,18 @@ const inCheck = (chessGame) => {
 }
 
 const inCheckMate = (chessGame) => {
-  let result = false;
-  if (inCheck(chessGame)){
-    if (moveAwayFromThreat(chessGame) === false){
-      if(blockThreat(chessGame) === false){
-        if(captureThreat(chessGame) === false) {
-          result = true;
-        }
-      }
-    }
-  }
-  return result;
+  return (inCheck(chessGame) && moveAwayFromThreat(chessGame) === false && blockThreat(chessGame) === false && captureThreat(chessGame) === false);
 }
 
 const inStaleMate = (chessGame) => {
   let myMoves = [];
   let result = false;
-  if (inCheck(chessGame) === false) {
-    if (moveAwayFromThreat(chessGame) === false){
-      result = true; 
+  if (inCheck(chessGame) === false && moveAwayFromThreat(chessGame) === false) {
+      let result = true; 
       myPieces(chessGame).forEach(item => {        
        if (moveAwayFromThreat(chessGame, item) === true) result = false;       
       })
     }
-  }
   return result;
 }
 
@@ -560,6 +506,7 @@ const myPieces = (chessGame) => {
 
 const pawnPromotion = (chessGame, promotionChoice) => {
   chessGame.setPiece = [chessGame.getChosenPiece, `${chessGame.getColorPlaying} ${promotionChoice.options[promotionForm.selectedIndex].value}`];
+  boardRefresh(chessGame);
   document.getElementById('promotionOption').value='Choose';
   promotionForm.style.visibility = "hidden";
   promotionMessage.style.visibility = "hidden";
@@ -574,10 +521,7 @@ const pieceCode = (pArr, pNum, full = false) => {
 const piecePresent = (num, chessGame) => {
   let result = -1;
   for (let i = 0; i < 32; i ++){
-      if (chessGame.getPieces[i].position === num)
-      {
-        result = i;
-      }
+      if (chessGame.getPieces[i].position === num) result = i;
   }
   return result
 };
@@ -603,9 +547,7 @@ const setDestination = (id,chessGame) => {
     if (inCheck(chessGame)) {  //C H E C K   L O G I C   B E G I N S
       instructionMessage.textContent= (sotCheck) ? 'This move doesn\'t get you out of check \r\n\'go back\' and Select a different piece.' : 'This move will put you in check \r\n\'go back\' and Select a different piece.';
       chessGame.setDestination = [chessGame.getChosenPiece, oldDest];
-      if (capture === true) {
-        capturePiece.position = oldCapture;
-      };
+      if (capture === true) capturePiece.position = oldCapture;
       boardRefresh(chessGame);
     } else {                                            //C H E C K   L O G I C   E N D S
       //castle go logic
@@ -669,9 +611,7 @@ const trophyRefresh = (chessGame) => {
   let pl = -1;
   for(let i = 0; i < 32; i++){
     pl = chessGame.getPieces[i].position;
-    if(pl === -1) {
-      trophyPieces = trophyPieces.concat(i);   
-    }
+    if(pl === -1) trophyPieces = trophyPieces.concat(i);   
   }
   addTrophies(trophyPieces, chessGame);
 }
