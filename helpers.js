@@ -41,7 +41,7 @@ const blockSet = (chessGame) => {
     myMoves = moves(item,chessGame);
     myMoves.shift();
     myMoves.forEach(item => {
-      chessGame.getThreatPath.includes(item) ? addPiece = true : addPiece = addPiece;
+      chessGame.threatPath.includes(item) ? addPiece = true : addPiece = addPiece;
     })
     if (addPiece === true) result = result.concat(item);
   })
@@ -52,9 +52,9 @@ const blockSet = (chessGame) => {
 const blockThreat = (chessGame) => {
   inCheck(chessGame)
   let result = false;
-  if (chessGame.getThreatPath.length > 0){
+  if (chessGame.threatPath.length > 0){
     let adjacent = false
-    chessGame.getThreats.forEach(item => {
+    chessGame.threats.forEach(item => {
       if (['wn','ng','ht'].includes(item.slice(item.length - 2))) adjacent = true;
     })
     if (adjacent === false) {
@@ -87,7 +87,7 @@ const boardRefresh = (chessGame) => {
           addAnchor = true;
           squares[i].src = images[chessGame.getPieces[pieceNum].piece][squareColor(i) === "black" ? 0 : 1]
         } else {
-          if (chessGame.getGameState === 2)  addAnchor = true;
+          if (chessGame.gameState === 2)  addAnchor = true;
           squareColor(i) === "black" ? squares[i].src = "images\\bbkgr.png" : squares[i].src = "images\\wbkgr.png";
         }
         if (addAnchor) {
@@ -112,12 +112,12 @@ const captureThreat = (chessGame) => {
   let captureSet = [];
   let curLoc = - 1;
   let curThreatId = threatId(chessGame)
-  let curThreatLoc = chessGame.getThreatLoc[0]
-  if (chessGame.getThreatLoc.length === 1){
+  let curThreatLoc = chessGame.threatLoc[0]
+  if (chessGame.threatLoc.length === 1){
     myPieces(chessGame).forEach(item => {
       myMoves = moves(item,chessGame);
       myMoves.shift();
-      if (myMoves.includes(chessGame.getThreatLoc[0])) captureSet = captureSet.concat(item);
+      if (myMoves.includes(chessGame.threatLoc[0])) captureSet = captureSet.concat(item);
     });
   }
   captureSet.forEach(item => {
@@ -135,20 +135,20 @@ const castle = (type,chessGame) => {
   let kinko = {'short' : [[0,62],[1,57]],'long' : [[0,58],[1,61]]};
   let castleGo = window.confirm("Would you like to castle?");
   if (castleGo) {
-    let kingLoc = (chessGame.getColorPlaying === 'White' ? 0 : 1);
-    chessGame.setDestination = (chessGame.getColorPlaying === 'White' ? kinko[type][0] : kinko[type][1]);
+    let kingLoc = (chessGame.colorPlaying === 'White' ? 0 : 1);
+    chessGame.setDestination = (chessGame.colorPlaying === 'White' ? kinko[type][0] : kinko[type][1]);
     if (kingLoc === 0){
-      chessGame.setShortCastleWhite = false;
-      chessGame.setLongCastleWhite = false;
+      chessGame.shortCastleWhite = false;
+      chessGame.longCastleWhite = false;
     } else {
-      chessGame.setShortCastleBlack = false;
-      chessGame.setLongCastleBlack = false;
+      chessGame.shortCastleBlack = false;
+      chessGame.longCastleBlack = false;
     }
   }
 }
 
 const changePlayers = (chessGame) => {
-  (chessGame.getColorPlaying === 'White' ? chessGame.setColorPlaying = 'Black' : chessGame.setColorPlaying = 'White');
+  (chessGame.colorPlaying === 'White' ? chessGame.colorPlaying = 'Black' : chessGame.colorPlaying = 'White');
   for(let i = 0; i < 32; i ++) {
     if (chessGame.getPieces[i].position != -1) chessGame.setDestination = [i, flipValue(chessGame.getPieces[i].position)];
   }
@@ -159,9 +159,9 @@ const checkCastle = (pc, id, chessGame) => {
   let result = 'none';
   let king = -1;
   let kingLoc = -1;
-  chessGame.getColorPlaying === 'White' ? king = 0 : king = 1;
+  chessGame.colorPlaying === 'White' ? king = 0 : king = 1;
   kingLoc = chessGame.getPieces[king].position;
-  let castles = {'White King Rook' : [61, chessGame.getShortCastleWhite, [61,62]], 'Black King Rook': [58,chessGame.getShortCastleBlack, [58,57]], 'White Queen Rook' : [59,chessGame.getLongCastleWhite, [59,58]], 'Black Queen Rook': [60,chessGame.getLongCastleBlack, [60,61]]}
+  let castles = {'White King Rook' : [61, chessGame.shortCastleWhite, [61,62]], 'Black King Rook': [58,chessGame.shortCastleBlack, [58,57]], 'White Queen Rook' : [59,chessGame.longCastleWhite, [59,58]], 'Black Queen Rook': [60,chessGame.longCastleBlack, [60,61]]}
   id = parseInt(id);
   if(pc in castles){
     let cc = false
@@ -191,11 +191,7 @@ const compassRose = () => {
     get getMoves() { return this.moves; },
     get incMoves() { this.moves++; },
     location: 0,
-    get getLocation() { return this.location; },
-    set setLocation(location) { this.location = location; },
-    noMoreMoves: false,
-    get getNoMoreMoves() { return this.noMoreMoves; },
-    set setNoMoreMoves(nMMBool) { this.noMoreMoves = nMMBool; }
+    noMoreMoves: false
   }
   return(Object);
 };
@@ -205,37 +201,37 @@ const directional = (direction, id, chessGame, isPawn = false) => {
   , 'southeast' : ['pos',9,['en','op'],['ng'],1] , 'southwest' : ['pos',7,['en','op'],['ng'],8], 'north' : ['neg',8,['en','ok'],['ng'],8],
   'northeast' : ['neg',7,['en','op'],['wn','ng'],1], 'northwest' : ['neg',9,['en','op'],['wn','ng'],8]}
   let cr = compassRose();
-  while (cr.getNoMoreMoves === false){
-    cr.setLocation = piecePresent(chessGame.getPieces[id].position + offset(dmap[direction][1],cr.getMoves,dmap[direction][0]), chessGame);
-    if (cr.getLocation != -1) {
-      if (isOpponent(chessGame,cr.getLocation)) {
-        if (isThreat(dmap[direction][2], dmap[direction][3], pieceCode(chessGame,cr.getLocation), id, cr.getMoves)) {
-          chessGame.setCheck = true;
-          chessGame.setThreatPath = chessGame.getThreatPath.concat(cr.getResult);
-          chessGame.setThreats = chessGame.getThreats.concat(chessGame.getPieces[cr.getLocation].piece);
-          chessGame.setThreatLoc = chessGame.getThreatLoc.concat(chessGame.getPieces[cr.getLocation].position);
+  while (cr.noMoreMoves === false){
+    cr.location = piecePresent(chessGame.getPieces[id].position + offset(dmap[direction][1],cr.getMoves,dmap[direction][0]), chessGame);
+    if (cr.location != -1) {
+      if (isOpponent(chessGame,cr.location)) {
+        if (isThreat(dmap[direction][2], dmap[direction][3], pieceCode(chessGame,cr.location), id, cr.getMoves)) {
+          chessGame.check = true;
+          chessGame.threatPath = chessGame.threatPath.concat(cr.getResult);
+          chessGame.threats = chessGame.threats.concat(chessGame.getPieces[cr.location].piece);
+          chessGame.threatLoc = chessGame.threatLoc.concat(chessGame.getPieces[cr.location].position);
         }
         if (isPawn === false || (isPawn && ['northeast','northwest'].includes(direction))){
           cr.setResultInc = chessGame.getPieces[id].position + offset(dmap[direction][1],cr.getMoves,dmap[direction][0]);
-          cr.setNoMoreMoves = true;
+          cr.noMoreMoves = true;
         }
       }
-      if (cr.getMoves === 0){ cr.setResult = chessGame.getPieces[cr.getLocation].piece; }
-      cr.setNoMoreMoves = true;
+      if (cr.getMoves === 0){ cr.setResult = chessGame.getPieces[cr.location].piece; }
+      cr.noMoreMoves = true;
     } else { 
       if ((isPawn && ['northeast','northwest'].includes(direction)) === false) { 
         cr.setResultInc = chessGame.getPieces[id].position + offset(dmap[direction][1],cr.getMoves,dmap[direction][0]);
       } else
-      { cr.setNoMoreMoves = true; }   
+      { cr.noMoreMoves = true; }   
     }
     if (['east', 'south', 'southeast', 'southwest'].includes(direction)) {
-      if (chessGame.getPieces[id].position + offset(dmap[direction][1],cr.getMoves,dmap[direction][0]) > 63) cr.setNoMoreMoves = true;
+      if (chessGame.getPieces[id].position + offset(dmap[direction][1],cr.getMoves,dmap[direction][0]) > 63) cr.noMoreMoves = true;
     }
     if (['west', 'north', 'northeast', 'northwest'].includes(direction)) {
-      if (chessGame.getPieces[id].position + offset(dmap[direction][1],cr.getMoves,dmap[direction][0])  < 0) cr.setNoMoreMoves = true;
+      if (chessGame.getPieces[id].position + offset(dmap[direction][1],cr.getMoves,dmap[direction][0])  < 0) cr.noMoreMoves = true;
     }
     if (['east', 'west', 'southeast', 'southwest', 'northeast', 'northwest'].includes(direction)) {
-      if (getX(chessGame.getPieces[id].position + offset(dmap[direction][1],cr.getMoves,dmap[direction][0])) === dmap[direction][4] ) cr.setNoMoreMoves = true;
+      if (getX(chessGame.getPieces[id].position + offset(dmap[direction][1],cr.getMoves,dmap[direction][0])) === dmap[direction][4] ) cr.noMoreMoves = true;
     }
   }
   return cr.getResult;
@@ -245,11 +241,11 @@ const inCheck = (chessGame) => {
   let result = false;
   let threats = [];
   let kingLoc = -1;
-  chessGame.setCheck = false;
-  chessGame.setThreatPath = [];
-  chessGame.setThreats = [];
-  chessGame.setThreatLoc = [];
-  (chessGame.getColorPlaying === 'White' ? kingLoc = 0 : kingLoc = 1);
+  chessGame.check = false;
+  chessGame.threatPath = [];
+  chessGame.threats = [];
+  chessGame.threatLoc = [];
+  (chessGame.colorPlaying === 'White' ? kingLoc = 0 : kingLoc = 1);
   let KPos = chessGame.getPieces[kingLoc].position;
   if (getX(KPos) != 8) { directional('east',kingLoc,chessGame); }
   if (getX(KPos) != 1) { directional('west',kingLoc,chessGame); }
@@ -260,7 +256,7 @@ const inCheck = (chessGame) => {
   if (getX(KPos) != 1 && getY(KPos) != 8) { directional('southwest',kingLoc,chessGame); }
   if (getX(KPos) != 8 && getY(KPos) != 1) { directional('northeast',kingLoc,chessGame); }
   knightMoves(kingLoc,chessGame);
-  if (chessGame.getCheck) result = true;
+  if (chessGame.check) result = true;
   return result;
 }
 
@@ -282,7 +278,7 @@ const inStaleMate = (chessGame) => {
 
 const invalidMove = (pc, chessGame) => {
   let pm = "";
-  (pc === 'wn' && [48,49,50,51,52,53,54,55].includes(chessGame.getPieces[chessGame.getChosenPiece].position)) ? pm = '2 spaces' : '1 space';
+  (pc === 'wn' && [48,49,50,51,52,53,54,55].includes(chessGame.getPieces[chessGame.chosenPiece].position)) ? pm = '2 spaces' : '1 space';
   let helpfulMessages = {'wn':`This pawn can move ${pm} and capture diagonally 1 space where possible. Either select a valid square or \r\n Press \'go back\' and Select a different piece.`,
                          'ok':'A rook can move vertically and horizontally where not blocked. Either select a valid square or \r\n Press \'go back\' and Select a different piece.',
                          'ht':'A knight can move in a 1-2 or 2-1 L pattern. Either select a valid square or \r\n Press \'go back\' and Select a different piece.',
@@ -293,7 +289,7 @@ const invalidMove = (pc, chessGame) => {
   instructionMessage.textContent = helpfulMessages[pc];
 }
 
-const isOpponent = (pArr, pNum) => { return (pArr.getPieces[pNum].piece.charAt(0) != pArr.getColorPlaying.charAt(0)) }
+const isOpponent = (pArr, pNum) => { return (pArr.getPieces[pNum].piece.charAt(0) != pArr.colorPlaying.charAt(0)) }
 
 const isThreat = (disArr, adjArr, ePiece, mPiece, moves) => {
   let result = false
@@ -313,11 +309,11 @@ const knightMoves = (id,chessGame) => {
     position = chessGame.getPieces[id].position + correction
     if (piecePresent(position, chessGame) === -1  ) {result = result.concat(position);}
     else {
-      if (chessGame.getPieces[piecePresent(position, chessGame)].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)) {
+      if (chessGame.getPieces[piecePresent(position, chessGame)].piece.charAt(0) != chessGame.colorPlaying.charAt(0)) {
         if (pieceCode(chessGame,piecePresent(position, chessGame)) === 'ht') {
-          chessGame.setCheck = true;
-          chessGame.setThreats = chessGame.getThreats.concat(chessGame.getPieces[piecePresent(position, chessGame)].piece);
-          chessGame.setThreatLoc = chessGame.getThreatLoc.concat(chessGame.getPieces[piecePresent(position, chessGame)].position);
+          chessGame.check = true;
+          chessGame.threats = chessGame.threats.concat(chessGame.getPieces[piecePresent(position, chessGame)].piece);
+          chessGame.threatLoc = chessGame.threatLoc.concat(chessGame.getPieces[piecePresent(position, chessGame)].position);
         }
         result = result.concat(position);
       }
@@ -499,13 +495,13 @@ const moves = (id,chessGame) => {
 const myPieces = (chessGame) => {
   let result = []
   for(let i=0;i<32;i++){
-    if (chessGame.getPieces[i].piece.charAt(0) === chessGame.getColorPlaying.charAt(0) && chessGame.getPieces[i].position != -1) result = result.concat(i); 
+    if (chessGame.getPieces[i].piece.charAt(0) === chessGame.colorPlaying.charAt(0) && chessGame.getPieces[i].position != -1) result = result.concat(i); 
   }
   return result
 }
 
 const pawnPromotion = (chessGame, promotionChoice) => {
-  chessGame.setPiece = [chessGame.getChosenPiece, `${chessGame.getColorPlaying} ${promotionChoice.options[promotionForm.selectedIndex].value}`];
+  chessGame.setPiece = [chessGame.chosenPiece, `${chessGame.colorPlaying} ${promotionChoice.options[promotionForm.selectedIndex].value}`];
   boardRefresh(chessGame);
   document.getElementById('promotionOption').value='Choose';
   promotionForm.style.visibility = "hidden";
@@ -535,36 +531,36 @@ const setDestination = (id,chessGame) => {
       capturePiece = chessGame.getPieces[i];
     }
   }
-  if (chessGame.getMovesAvailable.includes(parseInt(id))) {     //V A L I D   S Q U A R E   L O G I C
-    let oldDest = chessGame.getPieces[chessGame.getChosenPiece].position;
+  if (chessGame.movesAvailable.includes(parseInt(id))) {     //V A L I D   S Q U A R E   L O G I C
+    let oldDest = chessGame.getPieces[chessGame.chosenPiece].position;
     let oldCapture = -1
     if (capture === true) {
       oldCapture = capturePiece.position;
       capturePiece.position = -1
     };
-    chessGame.setDestination = [chessGame.getChosenPiece, parseInt(id)];
-    let sotCheck = chessGame.getCheck;
+    chessGame.setDestination = [chessGame.chosenPiece, parseInt(id)];
+    let sotCheck = chessGame.check;
     if (inCheck(chessGame)) {  //C H E C K   L O G I C   B E G I N S
       instructionMessage.textContent= (sotCheck) ? 'This move doesn\'t get you out of check \r\n\'go back\' and Select a different piece.' : 'This move will put you in check \r\n\'go back\' and Select a different piece.';
-      chessGame.setDestination = [chessGame.getChosenPiece, oldDest];
+      chessGame.setDestination = [chessGame.chosenPiece, oldDest];
       if (capture === true) capturePiece.position = oldCapture;
       boardRefresh(chessGame);
     } else {                                            //C H E C K   L O G I C   E N D S
       //castle go logic
-        let canCastle = checkCastle(pieceCode(chessGame,chessGame.getChosenPiece, true),id,chessGame);
+        let canCastle = checkCastle(pieceCode(chessGame,chessGame.chosenPiece, true),id,chessGame);
         if (canCastle != 'none') { castle(canCastle,chessGame) }
         else{
-          switch(chessGame.getPieces[chessGame.getChosenPiece].piece){
-            case 'White King Rook': chessGame.setShortCastleWhite = false; break;
-            case 'Black King Rook': chessGame.setShortCastleBlack = false; break;
-            case 'White Queen Rook': chessGame.setLongCastleWhite = false; break;
-            case 'Black Queen Rook': chessGame.setLongCastleBlack = false; break;
-            case 'White King': chessGame.setShortCastleWhite = false; chessGame.setLongCastleWhite = false; break;
-            case 'Black King': chessGame.setShortCastleBlack = false; chessGame.setLongCastleBlack = false; break;
+          switch(chessGame.getPieces[chessGame.chosenPiece].piece){
+            case 'White King Rook': chessGame.shortCastleWhite = false; break;
+            case 'Black King Rook': chessGame.shortCastleBlack = false; break;
+            case 'White Queen Rook': chessGame.longCastleWhite = false; break;
+            case 'Black Queen Rook': chessGame.longCastleBlack = false; break;
+            case 'White King': chessGame.shortCastleWhite = false; chessGame.longCastleWhite = false; break;
+            case 'Black King': chessGame.shortCastleBlack = false; chessGame.longCastleBlack = false; break;
           }
         }
         // P A W N   P R O M O T I O N
-      if ([0,1,2,3,4,5,6,7].includes(parseInt(id)) && pieceCode(chessGame,chessGame.getChosenPiece) === 'wn'){
+      if ([0,1,2,3,4,5,6,7].includes(parseInt(id)) && pieceCode(chessGame,chessGame.chosenPiece) === 'wn'){
         promotionMessage.style.visibility = "visible";
         promotionForm.style.visibility = "visible";
         actionButton.style.visibility = "hidden";
@@ -572,15 +568,15 @@ const setDestination = (id,chessGame) => {
       boardRefresh(chessGame);
       stateThree(chessGame);
     }}
-   else { invalidMove(pieceCode(chessGame,chessGame.getChosenPiece),chessGame); }
+   else { invalidMove(pieceCode(chessGame,chessGame.chosenPiece),chessGame); }
 }
 
 const setPointOfOrigin = (id,chessGame) => {
   for (let i = 0; i < 32; i ++){
     if (chessGame.getPieces[i].position === parseInt(id)){
-      if(chessGame.getPieces[i].piece.charAt(0) != chessGame.getColorPlaying.charAt(0)){
+      if(chessGame.getPieces[i].piece.charAt(0) != chessGame.colorPlaying.charAt(0)){
         instructionMessage.setAttribute('style', 'white-space: pre;');
-        instructionMessage.textContent = `This is not a ${chessGame.getColorPlaying.toLowerCase()} player piece. \r\n Select your own color piece.`;
+        instructionMessage.textContent = `This is not a ${chessGame.colorPlaying.toLowerCase()} player piece. \r\n Select your own color piece.`;
       } else {
         let move = moves(i,chessGame);
         instructionMessage.setAttribute('style', 'white-space: pre;');
@@ -599,7 +595,7 @@ const squareHub = (id,chessGame) => {
 const threatId = (chessGame) => {
   let result = -1
   for(let i=0; i < 32;i++){
-    if (chessGame.getPieces[i].position === chessGame.getThreatLoc[0]) result = i;
+    if (chessGame.getPieces[i].position === chessGame.threatLoc[0]) result = i;
   }
   return result;
 }

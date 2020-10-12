@@ -3,11 +3,11 @@ import { boardRefresh, changePlayersBound, stateOneBound, stateFourBound } from 
 import { inCheck, inCheckMate, inStaleMate } from './helpers.js'
 
 const stateOne = (chessGame) => {
-    chessGame.setGameState = 1;
+    chessGame.gameState = 1;
     boardRefresh(chessGame);
     let instructionMessage = '';
     if (inCheck(chessGame)) {
-      chessGame.setCheck = true;
+      chessGame.check = true;
       instructionMessage = 'You are in check!!!\r\n'
     }
     instructionMessage += 'What piece would you like to move?  Press button to end game';
@@ -20,9 +20,9 @@ const stateOne = (chessGame) => {
 };
 
 const stateTwo = (move, chessGame) => {
-    chessGame.setGameState = 2;
-    chessGame.setMovesAvailable = move.slice(1);
-    chessGame.setChosenPiece = move[0];
+    chessGame.gameState = 2;
+    chessGame.movesAvailable = move.slice(1);
+    chessGame.chosenPiece = move[0];
     instructionMessage.textContent = `Where would you like to move? \r\n Press button to select another piece.`;
     actionButton.textContent = 'Go Back'
     actionButton.removeEventListener("click", stateFourBound);
@@ -31,7 +31,7 @@ const stateTwo = (move, chessGame) => {
 };
 
 const stateThree = (chessGame) => {
-    chessGame.setGameState = 3;
+    chessGame.gameState = 3;
     instructionMessage.textContent = `Press button to end turn.`;
     actionButton.textContent = 'End Turn'
     actionButton.removeEventListener("click", stateOneBound);
@@ -41,11 +41,11 @@ const stateThree = (chessGame) => {
 const stateFour = (chessGame) => {
     let quitter = window.confirm("Are you sure?");
     if (quitter){
-        chessGame.setGameState = 4;
+        chessGame.gameState = 4;
         let endCondition = `conceding. There were moves availble. \r\n It is wise to know your limitations, and folly not to push the envelope.\r\n Reload to play again.`
         if (inCheckMate(chessGame)) endCondition = 'checkmate. Good game!'
         if (inStaleMate(chessGame)) endCondition = '....hunh?  played to a draw?  Not to worry... Any time at the chessboard is time well spent!'
-        instructionMessage.textContent = `${chessGame.getColorPlaying} player lost by ${endCondition}`;
+        instructionMessage.textContent = `${chessGame.colorPlaying} player lost by ${endCondition}`;
         actionButton.style.visibility = "hidden"; 
     }
   };
