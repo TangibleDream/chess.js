@@ -1,7 +1,7 @@
 'use strict';
-import { boardRefresh, changePlayers, pawnPromotion } from './helpers.js';
+import { boardRefresh, pawnPromotion } from './helpers.js';
 import pieces from './pieces.js'
-import { stateOne, stateFour } from './state.js'
+import { stateOne } from './state.js'
 
 const game = {
   pieces,
@@ -28,17 +28,13 @@ const game = {
   }
 };
 
-let chessGame = game;
-boardRefresh(chessGame);
+boardRefresh();
 const actionButton = document.getElementById('actionButton');
 const instructionMessage = document.getElementById('instructionMessage');
 const promotionForm = document.getElementById('promotionOption');
-const promotionBound = pawnPromotion.bind(null, chessGame, promotionForm);
+const promotionBound = pawnPromotion.bind(null, promotionForm);
 promotionForm.addEventListener("change", promotionBound);
 instructionMessage.textContent = 'Press start to play.';
-const stateOneBound = stateOne.bind(null, chessGame);
-const stateFourBound = stateFour.bind(null, chessGame);
-const changePlayersBound = changePlayers.bind(null, chessGame);
-actionButton.addEventListener("click", stateOneBound);
+actionButton.addEventListener("click", stateOne);
 
-export { boardRefresh, changePlayersBound, promotionForm, stateOneBound, stateFourBound }
+export { game, promotionForm }
