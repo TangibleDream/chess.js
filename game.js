@@ -1,5 +1,5 @@
 'use strict';
-import { boardRefresh, pawnPromotion } from './helpers.js';
+import { boardRefresh, dataPull, pawnPromotion } from './helpers.js';
 import pieces from './pieces.js'
 import { stateOne } from './state.js'
 
@@ -29,12 +29,12 @@ const game = {
 };
 
 boardRefresh();
-const actionButton = document.getElementById('actionButton');
-const instructionMessage = document.getElementById('instructionMessage');
+;
 const promotionForm = document.getElementById('promotionOption');
 const promotionBound = pawnPromotion.bind(null, promotionForm);
 promotionForm.addEventListener("change", promotionBound);
-instructionMessage.textContent = 'Press start to play.';
-actionButton.addEventListener("click", stateOne);
+document.getElementById('instructionMessage').textContent = 'Press start to play.';
+document.getElementById('actionButton').addEventListener("click", stateOne);
+document.getElementById('dataSpout').addEventListener("click", dataPull);
 
 export { game, promotionForm }
