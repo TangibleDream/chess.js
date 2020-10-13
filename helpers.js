@@ -196,6 +196,17 @@ const compassRose = () => {
   return(Object);
 };
 
+const dataPull = () => {
+  let result = "export default [\r\n"
+  for(let i = 0;i<32;i++){
+    result += `  {\r\n    "piece":"${game.pieces[i].piece}",\r\n    "position":${game.pieces[i].position}\r\n  },\r\n`
+  }
+  result = result.slice(0, -3);
+  result += "\r\n]"
+  document.getElementById('dataMessage').setAttribute('style', 'white-space: pre;');
+  document.getElementById('dataMessage').textContent = result;
+}
+
 const directional = (direction, id, isPawn = false) => {
   let dmap = {'east' : ['pos',1,['en','ok'],['ng'],1], 'west' : ['neg',1,['en','ok'],['ng'],8], 'south' : ['pos',8,['en','ok'],['ng'],8]
   , 'southeast' : ['pos',9,['en','op'],['ng'],1] , 'southwest' : ['pos',7,['en','op'],['ng'],8], 'north' : ['neg',8,['en','ok'],['ng'],8],
@@ -612,4 +623,4 @@ const trophyRefresh = () => {
   addTrophies(trophyPieces);
 }
 
-export {addTrophies, blockSet, blockThreat, boardRefresh, changePlayers, inCheck, inCheckMate, inStaleMate, isOpponent, isThreat, pawnPromotion, pieceCode}
+export {addTrophies, blockSet, blockThreat, boardRefresh, changePlayers, dataPull, inCheck, inCheckMate, inStaleMate, isOpponent, isThreat, pawnPromotion, pieceCode}
