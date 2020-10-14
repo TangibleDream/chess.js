@@ -598,6 +598,12 @@ const setPointOfOrigin = (id) => {
   }
 }
 
+const specialMenuToggle = () => {
+  let myMenu = document.getElementById('specialMenu');
+  let myStuff = document.getElementById('specialStuff');
+  (myMenu.checked === true) ? myStuff.style.visibility = "visible" : myStuff.style.visibility = "hidden"; 
+}
+
 const squareHub = (id) => {
   if (game.gameState === 2) setDestination(id);
   if (game.gameState === 1) setPointOfOrigin(id);
@@ -623,4 +629,4 @@ const trophyRefresh = () => {
   addTrophies(trophyPieces);
 }
 
-export {addTrophies, blockSet, blockThreat, boardRefresh, changePlayers, dataPull, inCheck, inCheckMate, inStaleMate, isOpponent, isThreat, pawnPromotion, pieceCode}
+export {addTrophies, blockSet, blockThreat, boardRefresh, changePlayers, dataPull, inCheck, inCheckMate, inStaleMate, isOpponent, isThreat, pawnPromotion, pieceCode, specialMenuToggle}

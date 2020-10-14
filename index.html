@@ -17,10 +17,15 @@
             <option value="Queen Bishop">Bishop</option>
             <option value="Queen Knight">Knight</option>
             <option value="Queen Rook">Rook</option>
-        </select>
-        <button type="button" id="dataSpout" style="visibility: visible">Show board data</button>
+        </select>   
     </center>
-    <p id="dataMessage"></p>
+    <p>Special Chess Stuff</p>
+    <input type="checkbox" id="specialMenu">
+    <div id="specialStuff" style="visibility: hidden">    
+        <button type="button" id="players">Switch Active Player</button><br><br>   
+        <button type="button" id="dataSpout">Show board data</button>
+        <p id="dataMessage"></p>   
+    </div>
 </div>
 <script src="./game.js" type="module"></script>
 </body>
