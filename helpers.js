@@ -8,10 +8,10 @@ const addTrophies = (tArr) => {
   let bottom = document.getElementById('bottomTrophyCase');
   let trophies = []
   let tCount = 0
-  let images = {0:'wking', 1:'bking',2:'wquen', 3:'bquen',4:'wbishop', 5:'bbishop',6:'wbishop', 7:'bbishop',
-                8:'wknight', 9:'bknight',10:'wknight', 11:'bknight',12:'wrook', 13:'brook',14:'wrook', 15:'brook',
-                16:'wpwn', 17:'wpwn',18:'wpwn', 19:'wpwn',20:'wpwn', 21:'wpwn',22:'wpwn', 23:'wpwn',
-                24:'bpwn', 25:'bpwn',26:'bpwn', 27:'bpwn',28:'bpwn', 29:'bpwn',30:'bpwn', 31:'bpwn'}
+  let images = {0:'wking', 1:'bking',2:'wquen', 3:'bquen',4:'wbish', 5:'bbish',6:'wbish', 7:'bbish',
+                8:'wkngt', 9:'bkngt',10:'wkngt', 11:'bkngt',12:'wrook', 13:'brook',14:'wrook', 15:'brook',
+                16:'wpawn', 17:'wpawn',18:'wpawn', 19:'wpawn',20:'wpawn', 21:'wpawn',22:'wpawn', 23:'wpawn',
+                24:'bpawn', 25:'bpawn',26:'bpawn', 27:'bpawn',28:'bpawn', 29:'bpawn',30:'bpawn', 31:'bpawn'}
   tArr.forEach(item => {
     trophies[tCount] = document.createElement('img');
     trophies[tCount].src = `./images/${images[item]}wbkgr.png`;
@@ -20,13 +20,13 @@ const addTrophies = (tArr) => {
   })
   trophies.forEach(item => {
     if (game.colorPlaying === 'White') {
-      if(item.src.charAt(29) === 'w'){ //will change with server and filepath
+      if(item.src.charAt(item.src.length -14) === 'w'){ //will change with server and filepath
         top.appendChild(item);
       }
       else { bottom.appendChild(item); }
     }
     else {
-      if(item.src.charAt(29) === 'w'){ bottom.appendChild(item); }
+      if(item.src.charAt(item.src.length -14) === 'w'){ bottom.appendChild(item); }
       else { top.appendChild(item); }
     }
   })
@@ -72,10 +72,10 @@ const boardRefresh = () => {
     let addAnchor = false;
     let pieceNum = -1;
     let element = document.getElementById('chessBoard');
-    let images = {'White King' : ["images\\wkingbbkgr.png","images\\wkingwbkgr.png"], 'White Queen' : ["images\\wquenbbkgr.png", "images\\wquenwbkgr.png"], 'White King Bishop' : ["images\\wbishopbbkgr.png", "images\\wbishopwbkgr.png"], 'White Queen Bishop' : ["images\\wbishopbbkgr.png", "images\\wbishopwbkgr.png"],
-                  'White King Knight' : ["images\\wknightbbkgr.png","images\\wknightwbkgr.png"],'White Queen Knight' : ["images\\wknightbbkgr.png","images\\wknightwbkgr.png"],'White King Rook' : ["images\\wrookbbkgr.png","images\\wrookwbkgr.png"],'White Queen Rook' : ["images\\wrookbbkgr.png","images\\wrookwbkgr.png"],'White Pawn':["images\\wpwnbbkgr.png","images\\wpwnwbkgr.png"],
-                  'Black King' : ["images\\bkingbbkgr.png","images\\bkingwbkgr.png"], 'Black Queen' : ["images\\bquenbbkgr.png", "images\\bquenwbkgr.png"], 'Black King Bishop' : ["images\\bbishopbbkgr.png", "images\\bbishopwbkgr.png"], 'Black Queen Bishop' : ["images\\bbishopbbkgr.png", "images\\bbishopwbkgr.png"],
-                  'Black King Knight' : ["images\\bknightbbkgr.png","images\\bknightwbkgr.png"],'Black Queen Knight' : ["images\\bknightbbkgr.png","images\\bknightwbkgr.png"],'Black King Rook' : ["images\\brookbbkgr.png","images\\brookwbkgr.png"],'Black Queen Rook' : ["images\\brookbbkgr.png","images\\brookwbkgr.png"],'Black Pawn':["images\\bpwnbbkgr.png","images\\bpwnwbkgr.png"]}
+    let images = {'White King' : ["images\\wkingbbkgr.png","images\\wkingwbkgr.png"], 'White Queen' : ["images\\wquenbbkgr.png", "images\\wquenwbkgr.png"], 'White King Bishop' : ["images\\wbishbbkgr.png", "images\\wbishwbkgr.png"], 'White Queen Bishop' : ["images\\wbishbbkgr.png", "images\\wbishwbkgr.png"],
+                  'White King Knight' : ["images\\wkngtbbkgr.png","images\\wkngtwbkgr.png"],'White Queen Knight' : ["images\\wkngtbbkgr.png","images\\wkngtwbkgr.png"],'White King Rook' : ["images\\wrookbbkgr.png","images\\wrookwbkgr.png"],'White Queen Rook' : ["images\\wrookbbkgr.png","images\\wrookwbkgr.png"],'White Pawn':["images\\wpawnbbkgr.png","images\\wpawnwbkgr.png"],
+                  'Black King' : ["images\\bkingbbkgr.png","images\\bkingwbkgr.png"], 'Black Queen' : ["images\\bquenbbkgr.png", "images\\bquenwbkgr.png"], 'Black King Bishop' : ["images\\bbishbbkgr.png", "images\\bbishwbkgr.png"], 'Black Queen Bishop' : ["images\\bbishbbkgr.png", "images\\bbishwbkgr.png"],
+                  'Black King Knight' : ["images\\bkngtbbkgr.png","images\\bkngtwbkgr.png"],'Black Queen Knight' : ["images\\bkngtbbkgr.png","images\\bkngtwbkgr.png"],'Black King Rook' : ["images\\brookbbkgr.png","images\\brookwbkgr.png"],'Black Queen Rook' : ["images\\brookbbkgr.png","images\\brookwbkgr.png"],'Black Pawn':["images\\bpawnbbkgr.png","images\\bpawnwbkgr.png"]}
 
     clearParent('chessBoard');
 
