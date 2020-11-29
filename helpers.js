@@ -277,12 +277,13 @@ const inCheckMate = () => {
 
 const inStaleMate = () => {
   let myMoves = [];
-  let result = false;
+  let result = true;
   if (inCheck() === false && moveAwayFromThreat() === false) {
       myPieces().forEach(item => {        
-       if (moveAwayFromThreat(item) === false) result = true;
+       if (moveAwayFromThreat(item) === true) result = false;
       })
     }
+    else result = false;
   return result;
 }
 
