@@ -279,9 +279,8 @@ const inStaleMate = () => {
   let myMoves = [];
   let result = false;
   if (inCheck() === false && moveAwayFromThreat() === false) {
-      let result = true; 
       myPieces().forEach(item => {        
-       if (moveAwayFromThreat(item) === true) result = false;       
+       if (moveAwayFromThreat(item) === false) result = true;
       })
     }
   return result;
@@ -339,7 +338,7 @@ const moveAwayFromThreat = (bp = -1) => {
   if (bp > -1) testKing = bp;
   let kingLoc = game.getPieces[testKing].position;
   let myMoves = moves(testKing);
-  if(Number.isInteger(myMoves[0])){
+  if(Number.isInteger(myMoves[0]) && myMoves.length > 1){
     myMoves.shift();
     myMoves.forEach(item => {
       game.setDestination = [testKing,item];
